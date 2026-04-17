@@ -350,7 +350,7 @@
     <div class="form-grid">
       <div class="form-group">
         <label>Hotel *</label>
-        <select id="fHotel" onchange="actualizarDep()">
+        <select id="fHotel">
           <option value="">Selecciona hotel</option>
           <option>Hotel Maspalomas Tabaiba Princess</option>
           <option>Hotel Gran Canaria Princess</option>
@@ -788,16 +788,6 @@ Registro generado automáticamente · Princess Hotels Canarias`
       document.getElementById('provSugerencias').style.display='none';
     }
   });
-
-  async function cargarNumeroRegistro() {
-    try {
-      const todos = await supaFetch('incidencias?select=numero&order=numero.desc&limit=1');
-      const siguiente = (todos && todos.length > 0 && todos[0].numero) ? todos[0].numero + 1 : 1;
-      document.getElementById('numRegistro').textContent = String(siguiente).padStart(4,'0');
-    } catch(e) { document.getElementById('numRegistro').textContent = '—'; }
-  }
-
-  cargarNumeroRegistro();
 
 </script>
 </body>

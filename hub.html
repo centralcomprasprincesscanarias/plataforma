@@ -110,10 +110,14 @@
     /* ── Cards grid ── */
     .cards {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 24px;
       width: 100%;
-      max-width: 1400px;
+      max-width: 1600px;
+    }
+
+    @media (max-width: 1200px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     .card {
@@ -319,14 +323,15 @@
     <!-- Cards -->
     <div class="cards">
 
-      <!-- Fichas Técnicas -->
-      <a class="card" href="fichas.html" id="cardFichas">
-        <div class="badge-conectado">● Activo</div>
-        <div class="card-title">Fichas Técnicas</div>
-        <div class="card-desc">Repositorio de fichas técnicas de productos de menaje. Búsqueda avanzada, estadísticas y panel de administración.</div>
 
-        <button class="card-btn" onclick="event.preventDefault(); window.location.href='fichas.html'">
-          Abrir portal <span class="arrow">→</span>
+      <!-- Asignaciones -->
+      <a class="card" href="asignaciones.html" id="cardAsignaciones">
+        <div class="badge-conectado">● Activo</div>
+        <div class="card-title">Asignaciones</div>
+        <div class="card-desc">Buscador general y consulta por familias. Estructura preparada para cargar asignaciones desde la nube.</div>
+
+        <button class="card-btn" onclick="event.preventDefault(); window.location.href='asignaciones.html'">
+          Abrir Asignaciones <span class="arrow">→</span>
         </button>
       </a>
 
@@ -334,10 +339,21 @@
       <a class="card" href="dosier.html" id="cardDosier">
         <div class="badge-conectado">● Activo</div>
         <div class="card-title">Dosier</div>
-        <div class="card-desc">Catálogo de artículos por departamento. Realiza pedidos, consulta historial y gestiona el estado desde el panel admin.</div>
+        <div class="card-desc">Catálogo de artículos. Realiza pedidos y consulta historial.</div>
 
         <button class="card-btn" onclick="event.preventDefault(); window.location.href='dosier.html'">
           Abrir Dosier <span class="arrow">→</span>
+        </button>
+      </a>
+
+      <!-- Fichas Técnicas -->
+      <a class="card" href="fichas.html" id="cardFichas">
+        <div class="badge-conectado">● Activo</div>
+        <div class="card-title">Fichas Técnicas</div>
+        <div class="card-desc">Repositorio de fichas técnicas. Búsqueda avanzada y panel de administración.</div>
+
+        <button class="card-btn" onclick="event.preventDefault(); window.location.href='fichas.html'">
+          Abrir portal <span class="arrow">→</span>
         </button>
       </a>
 

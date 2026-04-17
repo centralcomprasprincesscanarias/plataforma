@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asignaciones · Princess Hotels</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #b08d57;
+      --gold-lt: #d4b483;
+      --gold-dk: #8a6b38;
+      --dark: #1a1510;
+      --dark2: #221c14;
+      --dark3: #2c2218;
+      --mid: #5a5248;
+      --soft: #9a9088;
+      --light: #f7f4f0;
+      --border: rgba(176,141,87,0.25);
+      --border-lt: rgba(176,141,87,0.12);
+      --ok: #6dda88;
+      --radius: 18px;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--dark);
+      font-family: 'Outfit', sans-serif;
+      color: var(--light);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .bg-layer {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(176,141,87,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(176,141,87,0.05) 0%, transparent 60%),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 60px,
+          rgba(176,141,87,0.03) 60px,
+          rgba(176,141,87,0.03) 61px
+        );
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: 28px 22px 40px;
+    }
+
+    .topbar {
+      max-width: 1400px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      background: rgba(34, 28, 20, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px 20px;
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--dark3);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-lt);
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .title-wrap h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.08;
+      color: var(--light);
+    }
+
+    .title-wrap p {
+      color: var(--soft);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(109, 218, 136, 0.28);
+      background: rgba(109, 218, 136, 0.1);
+      color: var(--ok);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .btn-back {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--gold-lt);
+      padding: 11px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: .2s ease;
+    }
+
+    .btn-back:hover {
+      border-color: rgba(176,141,87,0.55);
+      background: rgba(176,141,87,0.08);
+    }
+
+    .panel {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: rgba(34, 28, 20, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      padding: 24px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.26);
+    }
+
+    .search-block {
+      margin-bottom: 22px;
+    }
+
+    .search-label {
+      display: block;
+      font-size: 12px;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 15px 18px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--light);
+      font-size: 15px;
+      outline: none;
+      transition: .2s ease;
+    }
+
+    .search-input:focus {
+      border-color: rgba(176,141,87,0.55);
+      box-shadow: 0 0 0 3px rgba(176,141,87,0.10);
+    }
+
+    .search-input::placeholder { color: var(--soft); }
+
+    .btn-clear {
+      border: 1px solid var(--border);
+      background: var(--dark3);
+      color: var(--gold-lt);
+      padding: 0 16px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .btn-clear:hover { filter: brightness(1.08); }
+
+    .helper {
+      margin-top: 10px;
+      color: var(--soft);
+      font-size: 12px;
+    }
+
+    .familias {
+      display: grid;
+      gap: 14px;
+    }
+
+    .familia {
+      border: 1px solid var(--border-lt);
+      background: rgba(255,255,255,0.02);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .familia-header {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: var(--light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px 20px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .familia-left {
+      min-width: 0;
+    }
+
+    .familia-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      line-height: 1.08;
+    }
+
+    .familia-sub {
+      font-size: 12px;
+      color: var(--soft);
+      margin-top: 5px;
+    }
+
+    .familia-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .count {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(176,141,87,0.12);
+      border: 1px solid rgba(176,141,87,0.18);
+      color: var(--gold-lt);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .arrow {
+      color: var(--gold-lt);
+      font-size: 20px;
+      transition: transform .2s ease;
+    }
+
+    .familia.open .arrow { transform: rotate(90deg); }
+
+    .familia-body {
+      display: none;
+      padding: 0 20px 18px;
+    }
+
+    .familia.open .familia-body { display: block; }
+
+    .tabla-wrap {
+      border: 1px solid var(--border-lt);
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.12);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead tr { background: rgba(176,141,87,0.08); }
+
+    th, td {
+      padding: 13px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-lt);
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    td {
+      font-size: 14px;
+      color: var(--light);
+    }
+
+    tbody tr:hover td { background: rgba(255,255,255,0.02); }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .codigo {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      color: var(--gold-lt);
+      white-space: nowrap;
+    }
+
+    .articulo {
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .empty {
+      padding: 26px 18px;
+      text-align: center;
+      color: var(--soft);
+      font-size: 14px;
+      border: 1px dashed var(--border-lt);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .hidden-family { display: none !important; }
+
+    @media (max-width: 860px) {
+      .panel { padding: 18px; border-radius: 20px; }
+      .search-row { grid-template-columns: 1fr; }
+      .familia-title { font-size: 18px; }
+      .familia-header { padding: 16px; }
+      .familia-body { padding: 0 16px 16px; }
+      .tabla-wrap { overflow-x: auto; }
+      table { min-width: 620px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-layer"></div>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="logo">≡</div>
+        <div class="title-wrap">
+          <h1>Asignaciones</h1>
+          <p>Estructura preparada para cargar asignaciones desde Excel en la nube</p>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="badge">● Activo</div>
+        <a class="btn-back" href="hub.html">Volver al inicio</a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="search-block">
+        <label class="search-label" for="buscadorGeneral">Buscador general</label>
+        <div class="search-row">
+          <input id="buscadorGeneral" class="search-input" type="text" placeholder="Buscar por código DALI, código SAP o nombre del artículo" />
+          <button class="btn-clear" id="btnLimpiar" type="button">Limpiar</button>
+        </div>
+        <div class="helper">Pantalla base preparada. Las asignaciones reales se cargarán después desde Excel sincronizado en la nube.</div>
+      </div>
+
+      <div id="familiasContainer" class="familias"></div>
+    </div>
+  </div>
+
+  <script>
+    const asignaciones = [];
+
+    const familiasOrden = [
+      '01. FRUTAS Y VERDURAS FRESCAS',
+      '02. PESCADOS',
+      '03. CARNES',
+      '04. QUESOS',
+      '05. EMBUTIDOS'
+    ];
+
+    const container = document.getElementById('familiasContainer');
+    const buscador = document.getElementById('buscadorGeneral');
+    const btnLimpiar = document.getElementById('btnLimpiar');
+
+    function normalizar(valor) {
+      return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+    }
+
+    function coincide(item, texto) {
+      if (!texto) return true;
+      const q = normalizar(texto);
+      return normalizar(item.dali).includes(q) ||
+             normalizar(item.sap).includes(q) ||
+             normalizar(item.articulo).includes(q);
+    }
+
+    function renderFamilias() {
+      const termino = buscador.value;
+      container.innerHTML = '';
+
+      familiasOrden.forEach((familia) => {
+        const itemsFamilia = asignaciones.filter(item => item.familia === familia);
+        const filtrados = itemsFamilia.filter(item => coincide(item, termino));
+        const visible = !termino || filtrados.length > 0 || asignaciones.length === 0;
+
+        const card = document.createElement('section');
+        card.className = 'familia' + (!visible ? ' hidden-family' : '');
+
+        card.innerHTML = `
+          <button class="familia-header" type="button">
+            <div class="familia-left">
+              <div class="familia-title">${familia}</div>
+              <div class="familia-sub">Código DALI, código SAP y nombre del artículo</div>
+            </div>
+            <div class="familia-right">
+              <div class="count">${filtrados.length} registro${filtrados.length === 1 ? '' : 's'}</div>
+              <div class="arrow">›</div>
+            </div>
+          </button>
+          <div class="familia-body">
+            ${filtrados.length ? `
+              <div class="tabla-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Código DALI</th>
+                      <th>Código SAP</th>
+                      <th>Nombre del artículo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${filtrados.map(item => `
+                      <tr>
+                        <td class="codigo">${item.dali}</td>
+                        <td class="codigo">${item.sap}</td>
+                        <td class="articulo">${item.articulo}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : `
+              <div class="empty">Estructura creada. Esta familia aún no tiene asignaciones cargadas.</div>
+            `}
+          </div>
+        `;
+
+        const header = card.querySelector('.familia-header');
+        header.addEventListener('click', () => {
+          card.classList.toggle('open');
+        });
+
+        if (termino && filtrados.length > 0) {
+          card.classList.add('open');
+        }
+
+        container.appendChild(card);
+      });
+    }
+
+    buscador.addEventListener('input', renderFamilias);
+    btnLimpiar.addEventListener('click', () => {
+      buscador.value = '';
+      renderFamilias();
+      buscador.focus();
+    });
+
+    renderFamilias();
+      buscador.focus();
+    });
+
+    renderFamilias();
+  </script>
+</body>
+</html>

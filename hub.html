@@ -136,6 +136,7 @@
     .card:nth-child(1) { animation-delay: 0.15s; }
     .card:nth-child(2) { animation-delay: 0.28s; }
     .card:nth-child(3) { animation-delay: 0.40s; }
+    .card:nth-child(4) { animation-delay: 0.52s; }
 
     .card::before {
       content: '';
@@ -337,6 +338,17 @@
 
         <button class="card-btn" onclick="event.preventDefault(); window.location.href='dosier.html'">
           Abrir Dosier <span class="arrow">→</span>
+        </button>
+      </a>
+
+      <!-- Incidencias -->
+      <a class="card" href="incidencias.html" id="cardIncidencias">
+        <div class="badge-conectado">● Activo</div>
+        <div class="card-title">Incidencias</div>
+        <div class="card-desc">Registra incidencias con foto, notifica al comprador del hotel y consulta el historial completo por hotel y departamento.</div>
+
+        <button class="card-btn" onclick="event.preventDefault(); window.location.href='incidencias.html'">
+          Abrir Incidencias <span class="arrow">→</span>
         </button>
       </a>
 

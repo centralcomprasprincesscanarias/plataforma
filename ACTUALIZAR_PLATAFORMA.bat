@@ -13,7 +13,7 @@ set ACTUALIZADO=0
 
 :: hub.html
 if exist "%USERPROFILE%\Downloads\hub.html" (
-    copy "%USERPROFILE%\Downloads\hub.html" "hub.html" /Y
+    xcopy /Y /Q "%USERPROFILE%\Downloads\hub.html" "D:\PLATAFORMA PRINCESS\"
     echo OK: hub.html copiado
     set ACTUALIZADO=1
 ) else (
@@ -22,7 +22,7 @@ if exist "%USERPROFILE%\Downloads\hub.html" (
 
 :: dosier.html
 if exist "%USERPROFILE%\Downloads\dosier.html" (
-    copy "%USERPROFILE%\Downloads\dosier.html" "dosier.html" /Y
+    xcopy /Y /Q "%USERPROFILE%\Downloads\dosier.html" "D:\PLATAFORMA PRINCESS\"
     echo OK: dosier.html copiado
     set ACTUALIZADO=1
 ) else (
@@ -31,7 +31,7 @@ if exist "%USERPROFILE%\Downloads\dosier.html" (
 
 :: fichas.html
 if exist "%USERPROFILE%\Downloads\fichas.html" (
-    copy "%USERPROFILE%\Downloads\fichas.html" "fichas.html" /Y
+    xcopy /Y /Q "%USERPROFILE%\Downloads\fichas.html" "D:\PLATAFORMA PRINCESS\"
     echo OK: fichas.html copiado
     set ACTUALIZADO=1
 ) else (
@@ -40,7 +40,7 @@ if exist "%USERPROFILE%\Downloads\fichas.html" (
 
 :: incidencias.html
 if exist "%USERPROFILE%\Downloads\incidencias.html" (
-    copy "%USERPROFILE%\Downloads\incidencias.html" "incidencias.html" /Y
+    xcopy /Y /Q "%USERPROFILE%\Downloads\incidencias.html" "D:\PLATAFORMA PRINCESS\"
     echo OK: incidencias.html copiado
     set ACTUALIZADO=1
 ) else (
@@ -49,7 +49,7 @@ if exist "%USERPROFILE%\Downloads\incidencias.html" (
 
 :: admin.html
 if exist "%USERPROFILE%\Downloads\admin.html" (
-    copy "%USERPROFILE%\Downloads\admin.html" "admin.html" /Y
+    xcopy /Y /Q "%USERPROFILE%\Downloads\admin.html" "D:\PLATAFORMA PRINCESS\"
     echo OK: admin.html copiado
     set ACTUALIZADO=1
 ) else (

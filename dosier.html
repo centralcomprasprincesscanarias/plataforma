@@ -564,7 +564,7 @@ function renderArts(){
   </tr></thead><tbody>${artsFilt.map(a=>{
     const cant=pedido[a.id]?.cantidad||'';
     return `<tr>
-      <td><img class="art-img" src="${GH}${a.dali}.jpg" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="art-ph">?</div></td>
+      <td><img class="art-img" src="${GH}${a.imagen||'imagenes/'+String(a.dali).padStart(8,'0')+'.jpg'}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="art-ph">?</div></td>
       <td><strong>${a.dali||'-'}</strong></td><td>${a.sap||'-'}</td><td>${a.referencia||'-'}</td>
       <td>${a.fabricante||'-'}</td><td>${a.codigo_fabrica||'-'}</td>
       <td><span class="badge ${a.proveedor_casa_delfin==='SI'?'badge-si':'badge-no'}">${a.proveedor_casa_delfin||'NO'}</span></td>
@@ -641,7 +641,7 @@ async function buscarDosier(){
   document.getElementById('dosierContainer').innerHTML=`<table class="art-tabla"><thead><tr>
     <th>Img</th><th>DALI</th><th>SAP</th><th>Referencia</th><th>Fabricante</th><th>Departamento</th><th>Casa Delfín</th><th>PILSA</th>
   </tr></thead><tbody>${res.map(a=>`<tr>
-    <td><img class="art-img" src="${GH}${a.dali}.jpg" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="art-ph">?</div></td>
+    <td><img class="art-img" src="${GH}${a.imagen||'imagenes/'+String(a.dali).padStart(8,'0')+'.jpg'}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'"><div class="art-ph">?</div></td>
     <td><strong>${a.dali||'-'}</strong></td><td>${a.sap||'-'}</td><td>${a.referencia||'-'}</td>
     <td>${a.fabricante||'-'}</td><td>${a.departamento||'-'}</td>
     <td><span class="badge ${a.proveedor_casa_delfin==='SI'?'badge-si':'badge-no'}">${a.proveedor_casa_delfin||'NO'}</span></td>

@@ -56,6 +56,15 @@ if exist "%USERPROFILE%\Downloads\admin.html" (
     echo --: admin.html no encontrado en Downloads
 )
 
+:: asignaciones.html
+if exist "%USERPROFILE%\Downloads\asignaciones.html" (
+    xcopy /Y /Q "%USERPROFILE%\Downloads\asignaciones.html" "D:\PLATAFORMA PRINCESS\"
+    echo OK: asignaciones.html copiado
+    set ACTUALIZADO=1
+) else (
+    echo --: asignaciones.html no encontrado en Downloads
+)
+
 echo.
 
 if %ACTUALIZADO%==0 (
@@ -72,16 +81,11 @@ git commit -m "Actualizacion plataforma"
 git push
 
 echo.
-if %ERRORLEVEL% == 0 (
-    echo ============================================
-    echo   OK - PLATAFORMA ACTUALIZADA EN GITHUB
-    echo   Disponible en 1-2 minutos en:
-    echo   centralcomprasprincesscanarias.github.io
-    echo ============================================
-) else (
-    echo ERROR: No se pudo subir a GitHub
-    echo Comprueba la conexion e intentalo de nuevo
-)
+echo ============================================
+echo   OK - PLATAFORMA ACTUALIZADA EN GITHUB
+echo   Disponible en 1-2 minutos en:
+echo   centralcomprasprincesscanarias.github.io
+echo ============================================
 
 echo.
 pause

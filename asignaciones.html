@@ -1,466 +1,235 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Asignaciones · Princess Hotels</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --gold: #b08d57;
-      --gold-lt: #d4b483;
-      --gold-dk: #8a6b38;
-      --dark: #1a1510;
-      --dark2: #221c14;
-      --dark3: #2c2218;
-      --mid: #5a5248;
-      --soft: #9a9088;
-      --light: #f7f4f0;
-      --border: rgba(176,141,87,0.25);
-      --border-lt: rgba(176,141,87,0.12);
-      --ok: #6dda88;
-      --radius: 18px;
-    }
-
-    html, body {
-      min-height: 100vh;
-      background: var(--dark);
-      font-family: 'Outfit', sans-serif;
-      color: var(--light);
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .bg-layer {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(176,141,87,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(176,141,87,0.05) 0%, transparent 60%),
-        repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 60px,
-          rgba(176,141,87,0.03) 60px,
-          rgba(176,141,87,0.03) 61px
-        );
-    }
-
-    .page {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      padding: 28px 22px 40px;
-    }
-
-    .topbar {
-      max-width: 1400px;
-      margin: 0 auto 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      background: rgba(34, 28, 20, 0.92);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 16px 20px;
-      backdrop-filter: blur(8px);
-    }
-
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      min-width: 0;
-    }
-
-    .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: var(--dark3);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--gold-lt);
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    .title-wrap h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(24px, 4vw, 34px);
-      line-height: 1.08;
-      color: var(--light);
-    }
-
-    .title-wrap p {
-      color: var(--soft);
-      font-size: 13px;
-      margin-top: 4px;
-    }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(109, 218, 136, 0.28);
-      background: rgba(109, 218, 136, 0.1);
-      color: var(--ok);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .btn-back {
-      appearance: none;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--gold-lt);
-      padding: 11px 16px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: .2s ease;
-    }
-
-    .btn-back:hover {
-      border-color: rgba(176,141,87,0.55);
-      background: rgba(176,141,87,0.08);
-    }
-
-    .panel {
-      max-width: 1400px;
-      margin: 0 auto;
-      background: rgba(34, 28, 20, 0.94);
-      border: 1px solid var(--border);
-      border-radius: 26px;
-      padding: 24px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.26);
-    }
-
-    .search-block {
-      margin-bottom: 22px;
-    }
-
-    .search-label {
-      display: block;
-      font-size: 12px;
-      letter-spacing: 1.8px;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 10px;
-      font-weight: 700;
-    }
-
-    .search-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 15px 18px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      color: var(--light);
-      font-size: 15px;
-      outline: none;
-      transition: .2s ease;
-    }
-
-    .search-input:focus {
-      border-color: rgba(176,141,87,0.55);
-      box-shadow: 0 0 0 3px rgba(176,141,87,0.10);
-    }
-
-    .search-input::placeholder { color: var(--soft); }
-
-    .btn-clear {
-      border: 1px solid var(--border);
-      background: var(--dark3);
-      color: var(--gold-lt);
-      padding: 0 16px;
-      border-radius: 14px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: .2s ease;
-    }
-
-    .btn-clear:hover { filter: brightness(1.08); }
-
-    .helper {
-      margin-top: 10px;
-      color: var(--soft);
-      font-size: 12px;
-    }
-
-    .familias {
-      display: grid;
-      gap: 14px;
-    }
-
-    .familia {
-      border: 1px solid var(--border-lt);
-      background: rgba(255,255,255,0.02);
-      border-radius: 18px;
-      overflow: hidden;
-    }
-
-    .familia-header {
-      width: 100%;
-      border: none;
-      background: transparent;
-      color: var(--light);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 18px 20px;
-      cursor: pointer;
-      text-align: left;
-    }
-
-    .familia-left {
-      min-width: 0;
-    }
-
-    .familia-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 22px;
-      line-height: 1.08;
-    }
-
-    .familia-sub {
-      font-size: 12px;
-      color: var(--soft);
-      margin-top: 5px;
-    }
-
-    .familia-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-shrink: 0;
-    }
-
-    .count {
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(176,141,87,0.12);
-      border: 1px solid rgba(176,141,87,0.18);
-      color: var(--gold-lt);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .arrow {
-      color: var(--gold-lt);
-      font-size: 20px;
-      transition: transform .2s ease;
-    }
-
-    .familia.open .arrow { transform: rotate(90deg); }
-
-    .familia-body {
-      display: none;
-      padding: 0 20px 18px;
-    }
-
-    .familia.open .familia-body { display: block; }
-
-    .tabla-wrap {
-      border: 1px solid var(--border-lt);
-      border-radius: 16px;
-      overflow: hidden;
-      background: rgba(0,0,0,0.12);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    thead tr { background: rgba(176,141,87,0.08); }
-
-    th, td {
-      padding: 13px 14px;
-      text-align: left;
-      border-bottom: 1px solid var(--border-lt);
-      vertical-align: middle;
-    }
-
-    th {
-      font-size: 11px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--gold);
-      font-weight: 700;
-    }
-
-    td {
-      font-size: 14px;
-      color: var(--light);
-    }
-
-    tbody tr:hover td { background: rgba(255,255,255,0.02); }
-    tbody tr:last-child td { border-bottom: none; }
-
-    .codigo {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
-      color: var(--gold-lt);
-      white-space: nowrap;
-    }
-
-    .articulo {
-      font-weight: 600;
-      line-height: 1.3;
-    }
-
-    .empty {
-      padding: 26px 18px;
-      text-align: center;
-      color: var(--soft);
-      font-size: 14px;
-      border: 1px dashed var(--border-lt);
-      border-radius: 14px;
-      background: rgba(255,255,255,0.02);
-    }
-
-    .hidden-family { display: none !important; }
-
-    @media (max-width: 860px) {
-      .panel { padding: 18px; border-radius: 20px; }
-      .search-row { grid-template-columns: 1fr; }
-      .familia-title { font-size: 18px; }
-      .familia-header { padding: 16px; }
-      .familia-body { padding: 0 16px 16px; }
-      .tabla-wrap { overflow-x: auto; }
-      table { min-width: 620px; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Asignaciones · Princess Hotels</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root {
+  --gold:#b08d57; --gold-lt:#d4b483; --gold-dk:#8a6b38; --dark:#1a1510; --dark2:#221c14; --dark3:#2c2218;
+  --mid:#5a5248; --soft:#9a9088; --light:#f7f4f0; --border:rgba(176,141,87,0.25); --border-lt:rgba(176,141,87,0.12);
+  --ok:#6dda88; --radius:18px;
+}
+html,body{min-height:100vh;background:var(--dark);font-family:Arial,Helvetica,sans-serif;color:var(--light);-webkit-font-smoothing:antialiased}
+.bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+ radial-gradient(ellipse 80% 60% at 20% 10%, rgba(176,141,87,0.07) 0%, transparent 60%),
+ radial-gradient(ellipse 60% 80% at 80% 90%, rgba(176,141,87,0.05) 0%, transparent 60%),
+ repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(176,141,87,0.03) 60px,rgba(176,141,87,0.03) 61px);}
+.page{position:relative;z-index:1;min-height:100vh;padding:28px 22px 40px}
+.topbar{max-width:1400px;margin:0 auto 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:rgba(34,28,20,.92);border:1px solid var(--border);border-radius:20px;padding:16px 20px}
+.topbar-left{display:flex;align-items:center;gap:14px;min-width:0}
+.logo{width:44px;height:44px;border-radius:12px;background:var(--dark3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--gold-lt);font-size:20px;flex-shrink:0}
+.title-wrap h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(24px,4vw,34px);line-height:1.08;color:var(--light)}
+.title-wrap p{color:var(--soft);font-size:13px;margin-top:4px}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(109,218,136,.28);background:rgba(109,218,136,.1);color:var(--ok);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.btn-back{appearance:none;border:1px solid var(--border);background:transparent;color:var(--gold-lt);padding:11px 16px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:.2s ease}
+.btn-back:hover{border-color:rgba(176,141,87,.55);background:rgba(176,141,87,.08)}
+.panel{max-width:1400px;margin:0 auto;background:rgba(34,28,20,.94);border:1px solid var(--border);border-radius:26px;padding:24px;box-shadow:0 24px 64px rgba(0,0,0,.26)}
+.search-block{margin-bottom:22px}
+.search-label{display:block;font-size:12px;letter-spacing:1.8px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;font-weight:700}
+.search-row{display:grid;grid-template-columns:1fr auto;gap:12px}
+.search-input{width:100%;padding:15px 18px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--light);font-size:15px;outline:none;transition:.2s ease}
+.search-input:focus{border-color:rgba(176,141,87,.55);box-shadow:0 0 0 3px rgba(176,141,87,.10)}
+.search-input::placeholder{color:var(--soft)}
+.btn-clear{border:1px solid var(--border);background:var(--dark3);color:var(--gold-lt);padding:0 16px;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s ease}
+.helper{margin-top:10px;color:var(--soft);font-size:12px}
+.familias{display:grid;gap:14px}
+.familia{border:1px solid var(--border-lt);background:rgba(255,255,255,.02);border-radius:18px;overflow:hidden}
+.familia-header{width:100%;border:none;background:transparent;color:var(--light);display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;cursor:pointer;text-align:left}
+.familia-left{min-width:0}
+.familia-title{font-family:Georgia,"Times New Roman",serif;font-size:22px;line-height:1.08}
+.familia-sub{font-size:12px;color:var(--soft);margin-top:5px}
+.familia-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.count{padding:8px 12px;border-radius:999px;background:rgba(176,141,87,.12);border:1px solid rgba(176,141,87,.18);color:var(--gold-lt);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.arrow{color:var(--gold-lt);font-size:20px;transition:transform .2s ease}
+.familia.open .arrow{transform:rotate(90deg)}
+.familia-body{display:block;padding:0 20px 18px}
+.familia:not(.open) .familia-body{display:none}
+.tabla-wrap{border:1px solid var(--border-lt);border-radius:16px;overflow:hidden;background:rgba(0,0,0,.12)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:rgba(176,141,87,.08)}
+th,td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--border-lt);vertical-align:middle}
+th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:700}
+td{font-size:14px;color:var(--light)}
+tbody tr:hover td{background:rgba(255,255,255,.02)}
+tbody tr:last-child td{border-bottom:none}
+.codigo{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:var(--gold-lt);white-space:nowrap}
+.articulo{font-weight:600;line-height:1.3}
+.empty{padding:26px 18px;text-align:center;color:var(--soft);font-size:14px;border:1px dashed var(--border-lt);border-radius:14px;background:rgba(255,255,255,.02);margin-top:12px}
+[hidden]{display:none !important}
+@media (max-width:860px){
+  .panel{padding:18px;border-radius:20px}
+  .search-row{grid-template-columns:1fr}
+  .familia-title{font-size:18px}
+  .familia-header{padding:16px}
+  .familia-body{padding:0 16px 16px}
+  .tabla-wrap{overflow-x:auto}
+  table{min-width:760px}
+}
+</style>
 </head>
 <body>
-  <div class="bg-layer"></div>
-
-  <div class="page">
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="logo">≡</div>
-        <div class="title-wrap">
-          <h1>Asignaciones</h1>
-          <p>374 artículos · Frutas/Verduras · Pescados · Carnes</p>
-        </div>
-      </div>
-
-      <div class="topbar-right">
-        <div class="badge">● Activo</div>
-        <a class="btn-back" href="hub.html">Volver al inicio</a>
+<div class="bg-layer"></div>
+<div class="page">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo">≡</div>
+      <div class="title-wrap">
+        <h1>Asignaciones</h1>
+        <p>374 artículos · Frutas/Verduras · Pescados · Carnes</p>
       </div>
     </div>
-
-    <div class="panel">
-      <div class="search-block">
-        <label class="search-label" for="buscadorGeneral">Buscador general</label>
-        <div class="search-row">
-          <input id="buscadorGeneral" class="search-input" type="text" placeholder="Buscar por código DALI, código SAP o nombre del artículo" />
-          <button class="btn-clear" id="btnLimpiar" type="button">Limpiar</button>
-        </div>
-        <div class="helper">374 artículos cargados</div>
-      </div>
-
-      <div id="familiasContainer" class="familias"></div>
+    <div class="topbar-right">
+      <div class="badge">● Activo</div>
+      <a class="btn-back" href="#" onclick="history.back();return false;">Volver</a>
     </div>
   </div>
 
-  <script>
-var GITHUB_URL = 'https://raw.githubusercontent.com/centralcomprasprincesscanarias/asignaciones/main/asignaciones.json';
-var asignaciones = [{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2018","sap":"","articulo":"ACELGAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"3622","sap":"","articulo":"ACHICORIAS-RADICHO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1956","sap":"","articulo":"AGUACATE","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2020","sap":"","articulo":"AJOS EN RISTRA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2021","sap":"","articulo":"AJOS EXTRA SUPER FLOR","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2022","sap":"","articulo":"AJOS PELADOS FRESCOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"3897","sap":"","articulo":"ALBAHACA FRESCA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2024","sap":"","articulo":"APIO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1958","sap":"","articulo":"ARANDANOS FRESCOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2470","sap":"","articulo":"BATATA AMARILLA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"18497","sap":"","articulo":"BERENJENA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2027","sap":"","articulo":"BERROS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2028","sap":"","articulo":"BETERRADA COCIDA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"8456","sap":"","articulo":"BROTE DE CEBOLLA FRESCO","unidad":"UNID."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"8453","sap":"","articulo":"BROTES DE AJO FRESCO","unidad":"UNID."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"17474","sap":"","articulo":"BROTES DE ALFALFA","unidad":"UNID."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"8452","sap":"","articulo":"BROTES DE ESPARRAGOS FRESCOS","unidad":"UNID."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"8454","sap":"","articulo":"BROTES DE LENTEJAS FRESCOS","unidad":"UNID."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2029","sap":"","articulo":"BROTES DE SOJA GRANEL NATURAL","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2030","sap":"","articulo":"CALABACIN","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14438","sap":"","articulo":"CALABACIN ZUQUINI","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13405","sap":"","articulo":"CALABAZA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2033","sap":"","articulo":"CANONIGOS MACHE","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1959","sap":"","articulo":"CAQUIS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1960","sap":"","articulo":"CARAMBOLA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14583","sap":"","articulo":"CEBOLLA PELADA FRESCA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2476","sap":"","articulo":"CEBOLLAS BLANCA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2475","sap":"","articulo":"CEBOLLAS MORADAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14007","sap":"","articulo":"CEBOLLETAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2036","sap":"","articulo":"CEBOLLINO FRESCO (CIBOULETTE)","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"4576","sap":"","articulo":"CHALOTAS - ECHALOTE","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2477","sap":"","articulo":"CHAMPIÑON GRANEL","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13585","sap":"","articulo":"CHAMPIÑON LAMINADO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"20728","sap":"","articulo":"CHIRIVIA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"3906","sap":"","articulo":"CILANTRO FRESCO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2479","sap":"","articulo":"CIRUELAS AMARILLAS SUNGOLD","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2480","sap":"","articulo":"CIRUELAS ROJAS SANTA ROSA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1965","sap":"","articulo":"COCOS","unidad":"UNID."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"3621","sap":"","articulo":"COGOLLO DE TUDELA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2041","sap":"","articulo":"COL BLANCA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2042","sap":"","articulo":"COL CHINA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2043","sap":"","articulo":"COL LOMBARDA ROJA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2045","sap":"","articulo":"COLIFLOR","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"4575","sap":"","articulo":"ENDIVIAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"4327","sap":"","articulo":"ENELDO FRESCO - DILL","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2049","sap":"","articulo":"ESCAROLAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2051","sap":"","articulo":"ESPINACAS FRESCAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1967","sap":"","articulo":"FLORES COMESTIBLES","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1968","sap":"","articulo":"FRAMBUESAS FRESCAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1969","sap":"","articulo":"FRESAS GRANEL FRESCAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"21485","sap":"","articulo":"GERMINADO DE AJO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1971","sap":"","articulo":"GRANADA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1972","sap":"","articulo":"GROSELLA FRESCA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1973","sap":"","articulo":"GUAYABOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2052","sap":"","articulo":"HABICHUELA - JUDIA BOBY (REDONDA)","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2484","sap":"","articulo":"HABICHUELA - JUDIA HELDA (PLANA)","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13524","sap":"","articulo":"HIERBA HUERTO FRESCO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2046","sap":"","articulo":"HINOJO RAIZ - CORAZON","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2055","sap":"","articulo":"JENGIBRE FRESCO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"12958","sap":"","articulo":"KIWI AMARILLO - GOLD","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13408","sap":"","articulo":"KIWI VERDE","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"3510","sap":"","articulo":"LECHUGA BATAVIA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14367","sap":"","articulo":"LECHUGA HOJA DE ROBLE","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"3509","sap":"","articulo":"LECHUGA ICEBERG","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13514","sap":"","articulo":"LECHUGA LOLLO BIONDA VERDE","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13515","sap":"","articulo":"LECHUGA LOLLO ROSA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13507","sap":"","articulo":"LECHUGA ROMANA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1975","sap":"","articulo":"LIMA FRESCA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13733","sap":"","articulo":"LIMON AMARILLO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1976","sap":"","articulo":"LIMONES VERDES","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13509","sap":"","articulo":"MAIZ DULCE COCIDO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14233","sap":"","articulo":"MANDARINA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"9367","sap":"","articulo":"MANZANA FUJI","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"9359","sap":"","articulo":"MANZANA GOLDEN CALIBRE 24","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13403","sap":"","articulo":"MANZANA GRANNY SMITH","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14543","sap":"","articulo":"MANZANA PINK LADY","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14193","sap":"","articulo":"MANZANA ROJA CALIBRE 24","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1982","sap":"","articulo":"MELOCOTON","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1983","sap":"","articulo":"MELON PIEL DE SAPO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"9092","sap":"","articulo":"MENTA FRESCA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1984","sap":"","articulo":"MORAS FRESCA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2064","sap":"","articulo":"NABOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"25624","sap":"","articulo":"NARANJAS MAQUINA ZUMO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13508","sap":"","articulo":"NARANJAS NAVEL EXTRA DE MESA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1986","sap":"","articulo":"NECTARINA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"10701","sap":"","articulo":"ÑAME","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14064","sap":"","articulo":"ÑORAS EN RISTRA - PIMIENTA SECA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"12310","sap":"","articulo":"PAPA PELADA BRAVA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"6862","sap":"","articulo":"PAPA PELADA CUADROS PARA TORTILLA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"18605","sap":"","articulo":"PAPA PELADA ENTERA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13158","sap":"","articulo":"PAPA PELADA PANADERA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13448","sap":"","articulo":"PAPAS DE ARRUGAR","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"26069","sap":"","articulo":"PAPAS DE ARRUGAR ESPECIAL LAVADAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2068","sap":"","articulo":"PAPAS FOLIO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1988","sap":"","articulo":"PAPAYAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"11563","sap":"","articulo":"PARAGUAYO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2071","sap":"","articulo":"PEPINOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"9366","sap":"","articulo":"PERA CONFERENCIA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13790","sap":"","articulo":"PERA DEVOER","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13449","sap":"","articulo":"PERAS ERCOLINI","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"3907","sap":"","articulo":"PEREJIL FRESCO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13622","sap":"","articulo":"PERIFOLLO FRESCO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2483","sap":"","articulo":"PIMIENTA PICANTE ROJA - GUINDILLA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"21284","sap":"","articulo":"PIMIENTA PICANTE VERDE","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"4394","sap":"","articulo":"PIMIENTO ITALIANO ROJO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"19292","sap":"","articulo":"PIMIENTO ITALIANO VERDE","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2077","sap":"","articulo":"PIMIENTO ROJO EXTRA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2074","sap":"","articulo":"PIMIENTOS AMARILLOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2076","sap":"","articulo":"PIMIENTOS DE PADRON","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13195","sap":"","articulo":"PIMIENTOS VERDE EXTRA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"4577","sap":"","articulo":"PIÑA DE PLATANOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2079","sap":"","articulo":"PIÑA MILLO - MAZORCA MAIZ","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"16093","sap":"","articulo":"PIÑA TROPICAL EXTRA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13381","sap":"","articulo":"PLATANO MANILLA PRIMERA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1994","sap":"","articulo":"PLATANOS SUELTOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1995","sap":"","articulo":"POMELOS AMARILLOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2494","sap":"","articulo":"POMELOS ROJOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2080","sap":"","articulo":"PUERROS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2081","sap":"","articulo":"RABANILLOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13675","sap":"","articulo":"RABANO DAIKON NABO LARGO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2082","sap":"","articulo":"RABANOS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"17408","sap":"","articulo":"RAIZ DE APIO - APIO BOLA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13520","sap":"","articulo":"ROMERO FRESCO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2084","sap":"","articulo":"RUCULA VERDE","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1996","sap":"","articulo":"SALVIA BLANCA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13901","sap":"","articulo":"SANDIA NEGRA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13734","sap":"","articulo":"SANDIAS BLANCAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2085","sap":"","articulo":"SETAS GRANEL","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"18037","sap":"","articulo":"TOMATE CHERRY AMARILLO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2087","sap":"","articulo":"TOMATE CHERRY GRANEL","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14266","sap":"","articulo":"TOMATE CHERRY PERA GRANEL","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"17894","sap":"","articulo":"TOMATE CHERRY TRICOLOR","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"7735","sap":"","articulo":"TOMATE MEDIANO","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"3620","sap":"","articulo":"TOMATE PARRILLA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"9450","sap":"","articulo":"TOMATE RAMA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2089","sap":"","articulo":"TOMATES ENSALADA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2090","sap":"","articulo":"TOMILLO RAMA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"1999","sap":"","articulo":"UVAS BLANCAS","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"14855","sap":"","articulo":"UVAS MORADAS RED","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"13432","sap":"","articulo":"ZANAHORIA PENINSULA","unidad":"KG."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2388","sap":"","articulo":"HUEVOS FRESCOS","unidad":"BAND. 30"},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"8357","sap":"","articulo":"CALABAZA HALLOWEEN","unidad":"UNID."},{"familia":"01. FRUTAS Y VERDURAS FRESCAS","dali":"2000","sap":"","articulo":"UVAS DE LA SUERTE - FIN DE AÑO","unidad":"UNID."},{"familia":"02. PESCADOS","dali":"1453","sap":"","articulo":"BOQUERONES EN VINAGRE"},{"familia":"02. PESCADOS","dali":"1860","sap":"","articulo":"FILETE CHERNE CON PIEL CONG. (EVENTOS)"},{"familia":"02. PESCADOS","dali":"1864","sap":"","articulo":"FILETE DE BACALAO CON PIEL CONG."},{"familia":"02. PESCADOS","dali":"1866","sap":"","articulo":"FILETE DE CABALLA CON PIEL CONG."},{"familia":"02. PESCADOS","dali":"1867","sap":"","articulo":"FILETE FOGONERO SIN PIEL ISLANDIA CONG."},{"familia":"02. PESCADOS","dali":"1872","sap":"","articulo":"FILETE DE MERLUZA SIN PIEL ARGENTINO CONG."},{"familia":"02. PESCADOS","dali":"1873","sap":"","articulo":"FILETE  PALOMETA SIN PIEL CONG."},{"familia":"02. PESCADOS","dali":"1877","sap":"","articulo":"FILETE SARDINA CONG."},{"familia":"02. PESCADOS","dali":"1879","sap":"","articulo":"FILETE TILAPIA SIN PIEL CONG."},{"familia":"02. PESCADOS","dali":"1881","sap":"","articulo":"LENGUA LIMPIA G (400/500GR) CONG."},{"familia":"02. PESCADOS","dali":"1885","sap":"","articulo":"TRUCHA DESVICERADA BLANCA CONG."},{"familia":"02. PESCADOS","dali":"1889","sap":"","articulo":"CHERNE ENTERO CON CABEZA CONG."},{"familia":"02. PESCADOS","dali":"1890","sap":"","articulo":"COLA DE RAPE GRAN SOL 2,5/3,5 KG.  CONG."},{"familia":"02. PESCADOS","dali":"1893","sap":"","articulo":"LOMO BACALAO CONG."},{"familia":"02. PESCADOS","dali":"1896","sap":"","articulo":"LOMO DE MORO CONG."},{"familia":"02. PESCADOS","dali":"1901","sap":"","articulo":"SALMON RODAJAS ALASKA CONG."},{"familia":"02. PESCADOS","dali":"3224","sap":"","articulo":"LOMO DE MERLUZA SIN PIEL CONGELADO"},{"familia":"02. PESCADOS","dali":"3891","sap":"","articulo":"FILETE DE LENGUADO CONG."},{"familia":"02. PESCADOS","dali":"4512","sap":"","articulo":"LOMOS DE PEZ ESPADA CONG."},{"familia":"02. PESCADOS","dali":"4514","sap":"","articulo":"VENTRESCAS MERLUZA CON PIEL CONG."},{"familia":"02. PESCADOS","dali":"6858","sap":"","articulo":"FILETE PERCA S/PIEL 500/1000 CONG."},{"familia":"02. PESCADOS","dali":"8669","sap":"","articulo":"FILETE CHERNE SIN PIEL CONG."},{"familia":"02. PESCADOS","dali":"11333","sap":"","articulo":"FILETE DE TRUCHA ASALMONADA CONG."},{"familia":"02. PESCADOS","dali":"12111","sap":"","articulo":"BACALAO LOMO YUMBO CONG."},{"familia":"02. PESCADOS","dali":"13589","sap":"","articulo":"LOMO DE MERLUZA  CON PIEL CONGELADO"},{"familia":"02. PESCADOS","dali":"13826","sap":"","articulo":"BACALAO PORCIONADO CONGELADO"},{"familia":"02. PESCADOS","dali":"14455","sap":"","articulo":"FILETE GALLINETA CON PIEL GLASEO PROTEC. CONG."},{"familia":"02. PESCADOS","dali":"19058","sap":"","articulo":"FILETE GALLINETA CON PIEL NÓRDICA GLASEO 20%"},{"familia":"02. PESCADOS","dali":"15140","sap":"","articulo":"FILETE FOGONERO CON PIEL CONG."},{"familia":"02. PESCADOS","dali":"15885","sap":"","articulo":"SALMON EN PORCIONES SALAR CONG."},{"familia":"02. PESCADOS","dali":"16069","sap":"","articulo":"RODAJA DE MERLUZA GRANDE"},{"familia":"02. PESCADOS","dali":"16157","sap":"","articulo":"LENGUA LIMPIA M (200/300) CONG."},{"familia":"02. PESCADOS","dali":"16159","sap":"","articulo":"FILETE DE BACALAO CON PIEL GLASEO 5%"},{"familia":"02. PESCADOS","dali":"16168","sap":"","articulo":"FILETE DE MERLUZA CON PIEL ARGENTINA"},{"familia":"02. PESCADOS","dali":"16228","sap":"","articulo":"FILETE PERCA SIN PIEL (1000/2000) CONG."},{"familia":"02. PESCADOS","dali":"16238","sap":"","articulo":"SALMON FILETE CHILE EXTRA CONGELADO"},{"familia":"02. PESCADOS","dali":"16516","sap":"","articulo":"FILETE DORADA CON PIEL CONGELADO"},{"familia":"02. PESCADOS","dali":"16609","sap":"","articulo":"ATUN TACOS CONGELADO"},{"familia":"02. PESCADOS","dali":"16929","sap":"","articulo":"SALMON ENTERO CHILE CON CABEZA CONG."},{"familia":"02. PESCADOS","dali":"17940","sap":"","articulo":"COLA DE RAPE 200/300 CONGELADO"},{"familia":"02. PESCADOS","dali":"18023","sap":"","articulo":"FILETE DORADO SIN PIEL CONG."},{"familia":"02. PESCADOS","dali":"18029","sap":"","articulo":"MERLUZA SIN CABEZA CONG."},{"familia":"02. PESCADOS","dali":"18212","sap":"","articulo":"LOMO ATUN SIN SANGACHO CONGELADO"},{"familia":"02. PESCADOS","dali":"18240","sap":"","articulo":"LOMO BACALAO 200-300 GR SELECTO"},{"familia":"02. PESCADOS","dali":"18448","sap":"","articulo":"SALMON AHUMADO PRECORTADO CHILE CONG."},{"familia":"02. PESCADOS","dali":"18501","sap":"","articulo":"SALMON MARINADO PRECORTADO CHILE CONG."},{"familia":"02. PESCADOS","dali":"19001","sap":"","articulo":"FILETE DE MERLUZA SIN PIEL SUDAFRICA COG."},{"familia":"02. PESCADOS","dali":"19060","sap":"","articulo":"FILETE LUBINA CON PIEL CONGELADO"},{"familia":"02. PESCADOS","dali":"20145","sap":"","articulo":"LENGUA LIMPIA GG +500 CONGELADO"},{"familia":"02. PESCADOS","dali":"25190","sap":"","articulo":"FILETE FLETAN CONGELADO"},{"familia":"02. PESCADOS","dali":"25205","sap":"","articulo":"FILETE PANCHITO CON PIEL CONG."},{"familia":"02. PESCADOS","dali":"26326","sap":"","articulo":"PUNTAS DE SALMON NORUEGO"},{"familia":"02. PESCADOS","dali":"26358","sap":"","articulo":"LENGUA FILETE 60/90 GR CONG."},{"familia":"02. PESCADOS","dali":"27200","sap":"","articulo":"PEZ VELA FILETE SIN PIEL  CONG."},{"familia":"02. PESCADOS","dali":"14337","sap":"","articulo":"PORCION MARUCA CON PIEL"},{"familia":"02. PESCADOS","dali":"29436","sap":"","articulo":"FILETE PEZ GATO"},{"familia":"02. PESCADOS","dali":"1912","sap":"","articulo":"CARNE DE MEJILLON CHILE CONG."},{"familia":"02. PESCADOS","dali":"1915","sap":"","articulo":"NECORAS COCIDAS CONG."},{"familia":"02. PESCADOS","dali":"1916","sap":"","articulo":"PULPO G - CONGELADO"},{"familia":"02. PESCADOS","dali":"1919","sap":"","articulo":"TINTA DE CALAMAR CONG."},{"familia":"02. PESCADOS","dali":"1922","sap":"","articulo":"ALMEJA BLANCA CONG."},{"familia":"02. PESCADOS","dali":"1924","sap":"","articulo":"CALAMAR ENTERO SAHARIANO GG - G - M  CONGELADO"},{"familia":"02. PESCADOS","dali":"1927","sap":"","articulo":"CHOCO LIMPIO 8/12 CONGELADO"},{"familia":"02. PESCADOS","dali":"1933","sap":"","articulo":"LANGOSTINO Nº 4  (50-60) CULTIVO CONGELADO"},{"familia":"02. PESCADOS","dali":"1934","sap":"","articulo":"LANGOSTINO Nº 5  (60-70) CULTIVO CONGELADO"},{"familia":"02. PESCADOS","dali":"1936","sap":"","articulo":"LANGOSTINO Nº 3 CULTIVO CONGELADO"},{"familia":"02. PESCADOS","dali":"1939","sap":"","articulo":"MEJILLON 1/2 CONCHA CHILE CONG."},{"familia":"02. PESCADOS","dali":"3233","sap":"","articulo":"COCTEL DE MARISCOS CONG."},{"familia":"02. PESCADOS","dali":"4516","sap":"","articulo":"LANGOSTINO COCIDO 40/60 CONG."},{"familia":"02. PESCADOS","dali":"4517","sap":"","articulo":"GAMBAS PELADAS COCIDAS NORUEGA CONG."},{"familia":"02. PESCADOS","dali":"6861","sap":"","articulo":"LANGOSTINOS PELADO CONG. 40/50"},{"familia":"02. PESCADOS","dali":"11464","sap":"","articulo":"POTA REJOS CRUDO CONG."},{"familia":"02. PESCADOS","dali":"13592","sap":"","articulo":"MEJILLON 1/2 CONCHA CONG.NUEVA ZELANDA"},{"familia":"02. PESCADOS","dali":"14032","sap":"","articulo":"GAMBON Nº 1 CONG."},{"familia":"02. PESCADOS","dali":"16126","sap":"","articulo":"CHOCO LIMPIO 13/20 CONGELADO"},{"familia":"02. PESCADOS","dali":"16169","sap":"","articulo":"RODAJA POTON COCIDO CONG."},{"familia":"02. PESCADOS","dali":"17052","sap":"","articulo":"PREPARADO PAELLA CONG."},{"familia":"02. PESCADOS","dali":"17962","sap":"","articulo":"ANILLAS DE POTA CONG."},{"familia":"02. PESCADOS","dali":"19065","sap":"","articulo":"LANGOSTA COCIDA CORTADA  CONGELADA"},{"familia":"02. PESCADOS","dali":"19099","sap":"","articulo":"CANGREJO DE RÍO"},{"familia":"02. PESCADOS","dali":"19123","sap":"","articulo":"PULPO M - CONGELADO"},{"familia":"02. PESCADOS","dali":"19858","sap":"","articulo":"TUBO POTA GL PROTECCION CONGELADO"},{"familia":"02. PESCADOS","dali":"20433","sap":"","articulo":"CIGALA Nº 2  (16/20) CONGELADO"},{"familia":"02. PESCADOS","dali":"25300","sap":"","articulo":"TIRAS POTON CONG."},{"familia":"02. PESCADOS","dali":"1946","sap":"","articulo":"SUCEDANEO CAVIAR NEGRO"},{"familia":"02. PESCADOS","dali":"25537","sap":"","articulo":"SUCEDANEO CAVIAR ROJO"},{"familia":"02. PESCADOS","dali":"28341","sap":"","articulo":"PALITO CANGREJO LONCHEADO"},{"familia":"02. PESCADOS","dali":"1454","sap":"","articulo":"ARENQUES MARINADOS"},{"familia":"02. PESCADOS","dali":"1455","sap":"","articulo":"ARENQUES MOSTAZA"},{"familia":"02. PESCADOS","dali":"1456","sap":"","articulo":"ARENQUES TOMATE"},{"familia":"02. PESCADOS","dali":"1950","sap":"","articulo":"ATUN AHUMADO"},{"familia":"02. PESCADOS","dali":"3230","sap":"","articulo":"ARENQUE AL CURRY"},{"familia":"02. PESCADOS","dali":"8537","sap":"","articulo":"BACALAO AHUMADO"},{"familia":"02. PESCADOS","dali":"17044","sap":"","articulo":"RECORTES SALMON AHUMADO"},{"familia":"02. PESCADOS","dali":"24419","sap":"","articulo":"CABALLA AHUMADA"},{"familia":"03. CARNES","dali":"596","sap":"10100195","articulo":"CHULETA CORDERO CONGELADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1684","sap":"10101863","articulo":"PATA CORDERO S/HUESO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1689","sap":"10101865","articulo":"CABRA TROCEADA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"11148","sap":"10102193","articulo":"PATA / PIERNA CORDERO RECENTAL ENTERA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"16946","sap":"10101831","articulo":"PATA CORDERO LECHAL CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"19170","sap":"10101658","articulo":"CORDERO TROCEADO/TACO S/H  CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20627","sap":"10101502","articulo":"CARRE CORDERO RECENTAL CORTE FRANCES CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1698","sap":"10101833","articulo":"BONDIOLA S/H SECA EXTRA PORCINO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1699","sap":"10101836","articulo":"CHULETA AGUJA SECA EXTRA PORCINO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1700","sap":"","articulo":"CHULETA CERDO CENTRO SECA EXTRA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1704","sap":"10101838","articulo":"CINTA LOMO CERDO SECA EXTRA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1706","sap":"10101842","articulo":"COSTILLAS DE CERDO CARNUDA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1709","sap":"10101843","articulo":"LECHONES  6/8KG CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1711","sap":"10101844","articulo":"PATA CERDO C/HUESO Y PIEL CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1714","sap":"10101846","articulo":"SOLOMILLO CERDO SECO EXTRA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1717","sap":"10101847","articulo":"CARRILLADA DE CERDO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1810","sap":"10101767","articulo":"FILETE DE CINTA ADOBADA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3501","sap":"10100361","articulo":"CERDO MAGRO TACOS-ESTOFADO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3503","sap":"10100362","articulo":"CINTA LOMO CERDO SECA FILETEADA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"4091","sap":"10100306","articulo":"COSTILLAS SALADA PORCINO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"7594","sap":"10100142","articulo":"BROCHETA - PINCHO MORUNO PORCINO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"8257","sap":"10103240","articulo":"PLUMA DE CERDO IBERICO CONG. (EVENTOS)","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"15790","sap":"","articulo":"FILETE AGUJA CERDO CONGELADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"17599","sap":"","articulo":"SECRETO CERDO IBERICO CONG","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20621","sap":"10101499","articulo":"CHULETERO CERDO IBERICO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20623","sap":"10101501","articulo":"CINTA LOMO CERDO IBERICO CONGELADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"21139","sap":"10101493","articulo":"JAMON ENTERO DESHUESADO - GAMMON","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"21507","sap":"10101415","articulo":"SECRETO BLANCO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"21554","sap":"10101420","articulo":"CERDO EN TIRAS","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"25508","sap":"10101088","articulo":"PANCETA PORCINO CORTADA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"26622","sap":"10100952","articulo":"CODILLO CERDO CONGELADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1845","sap":"10101741","articulo":"PANCETA CERDO BACON CON PIEL -  REFRIGERADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"15951","sap":"","articulo":"CINTA LOMO AHUMADA REFRIGERADA - SAJONIA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"24517","sap":"10101187","articulo":"CINTA LOMO CON PIEL FRESCA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1729","sap":"10101801","articulo":"CARRILLADA DE TERNERA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1734","sap":"10101804","articulo":"ENTRAÑA VACUNO-FALDA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1735","sap":"10101805","articulo":"GARRON ENTERO VACUNO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1736","sap":"10101806","articulo":"HIGADO DE TERNERA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1737","sap":"10101807","articulo":"HUESOS TERNERA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1744","sap":"10101811","articulo":"PECETO VACUNO CONG. BRASIL","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1747","sap":"10101813","articulo":"SOLOMILLO 3/4  VACUNO CONG. BRASIL","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1753","sap":"10101818","articulo":"CENTRO CUADRIL VACUNO BRASIL  CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3496","sap":"10100360","articulo":"VACUNO CARNE TACOS  CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"8273","sap":"10100126","articulo":"CONTRA TERNERA ROSADA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"10617","sap":"10102224","articulo":"CARNE MOLIDA VACUNO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"18574","sap":"10101698","articulo":"ENTRECOT VACUNO CONGELADO URUGUAY","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20614","sap":"10101559","articulo":"CHULETERO TERNERA GALLEGA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20617","sap":"10101560","articulo":"LOMO VACA EXTRA S/H MADURACION 30 DIAS CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20820","sap":"10101528","articulo":"ENTRECOT VACUNO CONGELADO BRASIL","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"21495","sap":"10101413","articulo":"VACUNO TIRAS","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"21889","sap":"10101402","articulo":"COSTILLAR ENTERO VACUNO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"23418","sap":"10101295","articulo":"SOLOMILLO 3/4 URUGUAYO CONGELADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"25098","sap":"10101137","articulo":"CARNE MOLIDA MIXTA CERDO-VACUNO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"25982","sap":"10101030","articulo":"ENTRECOT - BIFE ANGOSTO PORCINADO GRUESO 2CM CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"25990","sap":"10101031","articulo":"OSSOBUCO DE TERNERA CORTADO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"26613","sap":"10100950","articulo":"COSTILLA AÑOJO C/CORTES CONG","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"27837","sap":"10103241","articulo":"JARRETE TERNERA BLANCA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"28885","sap":"10100683","articulo":"ENTRECOT - BIFE ANGOSTO PORCINADO FINO 1CM CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1757","sap":"10101820","articulo":"CENTRO DE CUADRIL VACUNO REFRIG. BRASIL","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1758","sap":"10101822","articulo":"CHULETA DE TERNERA REFRIG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1759","sap":"10101823","articulo":"ENTRECOT VACUNO REFRIG. BRASIL","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"8434","sap":"10100103","articulo":"ENTRECOT VACUNO REFRIG. URUGUAY","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"23420","sap":"10101296","articulo":"SOLOMILLO 3/4 URUGUAYO REFRIGERADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1762","sap":"10101824","articulo":"MAGRET DE PATO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1763","sap":"10101827","articulo":"ALITAS DE POLLO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1764","sap":"10101828","articulo":"MUSLO POLLO S/H S/P CONG. GRANEL","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1770","sap":"10101783","articulo":"JAMONCITOS DE MUSLOS CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1773","sap":"10101785","articulo":"MUSLO DE POLLO CON CADERA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1774","sap":"10101786","articulo":"MUSLO DE POLLO SIN CADERA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1775","sap":"10101788","articulo":"PATOS ENTEROS CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1776","sap":"10101789","articulo":"PAVOS ENTEROS CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1777","sap":"10101790","articulo":"PECHUGA DE PAVO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1778","sap":"10101791","articulo":"PECHUGA DE PAVO FILETEADA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1779","sap":"10101792","articulo":"PECHUGA DE POLLO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1780","sap":"10101793","articulo":"PECHUGA DE POLLO FILETEADA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1783","sap":"10101794","articulo":"REDONDO DE PAVO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1784","sap":"10101795","articulo":"CONEJO ENTERO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"2133","sap":"10101440","articulo":"BROCHETA DE POLLO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"4494","sap":"10100275","articulo":"POLLO ENTERO 1,2 KG. CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"6753","sap":"10100164","articulo":"SOLOMILLO DE POLLO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"12965","sap":"10102161","articulo":"FICELLES MOUSSE HIGADO DE PATO 400 GR","unidad":"UNIDAD"},{"familia":"03. CARNES","dali":"14126","sap":"10102092","articulo":"ALITAS POLLO CRUDA SALSA BARBACOA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"14127","sap":"10102093","articulo":"CHULETITAS DE PAVO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"16241","sap":"10101912","articulo":"JAMONCITOS ALAS GRANEL","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"18275","sap":"10101728","articulo":"TIRAS POLLO CONGELADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20622","sap":"10101500","articulo":"PECHUGA POLLO CORRAL CONGELADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20758","sap":"10101520","articulo":"JAMONCITOS ALAS BARBACOA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"21473","sap":"","articulo":"TIRAS DE PAVO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"2144","sap":"10101447","articulo":"FILETE PECHUGA DE POLLO EMPANADA REFRIGERADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3252","sap":"","articulo":"FINGERS DE POLLO REFRIGERADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"5354","sap":"10100232","articulo":"MINI CORDON BLEU DE POLLO REFRIGERADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"5369","sap":"10100203","articulo":"FILETE PECHUGA POLLO AL RAS EL HANOUT REFRIGERADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"10277","sap":"10102234","articulo":"PECHUGA DE POLLO REFRIGERADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"14452","sap":"","articulo":"PINCHO DE POLLO AL MOJO CANARIO REFRIGERADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"17570","sap":"10101821","articulo":"PECHUGA POLLO FILETEADA REFRIGERADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"18216","sap":"10101778","articulo":"STROGONOFF POLLO TIRAS ( REFRIGERADO)","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20904","sap":"10101467","articulo":"PINCHITO POLLO ADOBADO REFRIGERADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"26161","sap":"10101022","articulo":"MINI BROCHETA POLLO REFRIGERADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"26623","sap":"10100953","articulo":"MINI BROCHETA POLLO BARBACOA REFRIGERADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"28342","sap":"10100739","articulo":"MINI BROCHETA POLLO RAS EL HANOUT REFRIGERADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"408","sap":"10100305","articulo":"MORCILLA ASTURIANA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"579","sap":"10100194","articulo":"CINTA LOMO DE CERDO ADOBADA CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1800","sap":"10101799","articulo":"KEBAB TERNERA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1801","sap":"10101753","articulo":"KEBAB POLLO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1802","sap":"10101754","articulo":"CHORIZO PARRILLERO 100 GR ARGENTINO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1808","sap":"10101761","articulo":"SALCHICHAS COCKTAIL ROJA 25G. FRANKFURT","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1809","sap":"10101763","articulo":"MORCILLA DE ARROZ","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1814","sap":"10101771","articulo":"CHISTORRAS","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3250","sap":"10100388","articulo":"HAMBURGUESA MIXTA 80 GR CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3311","sap":"10100398","articulo":"SALCHICHA CHIPOLATA ROJA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3319","sap":"10100402","articulo":"SALCHICHA HOT DOG AHUMADA 75 GR","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3899","sap":"10100323","articulo":"SALCHICHA BRATWURST 100 GR.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3904","sap":"10100324","articulo":"CHORIZO ASTURIANO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"8205","sap":"10100124","articulo":"SALCHICHA CHIPOLATA 40 GR  BLANCA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"11149","sap":"10102194","articulo":"ALBONDIGAS POLLO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"11321","sap":"10102201","articulo":"ALBONDIGAS MIXTA VACUNO/CERDO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"11723","sap":"10102191","articulo":"CHORIZO CRIOLLO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"11725","sap":"10102192","articulo":"MORCILLA CEBOLLA PINCHO CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"14341","sap":"10102070","articulo":"HAMBURGUESA POLLO 80 GR CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"14469","sap":"10102027","articulo":"HAMBURGUESA 100% VACUNO 80 GR. CONG.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"18800","sap":"10101717","articulo":"CHORIZO PARRILLERO 100GR BBQ","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"18808","sap":"10101718","articulo":"SALCHICHA PARRILLERO POLLO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"19074","sap":"10101689","articulo":"CHORIZO PARRILLERO 50 GR BBQ","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"19102","sap":"10101692","articulo":"CHORIZO PARRILLERO POLLO 100GRS","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20438","sap":"10101536","articulo":"HAMBURGUESA 100% VACUNO 150 GR.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20895","sap":"10101463","articulo":"HAMBURGUESA AMERICANA 113GMS.","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"27627","sap":"10100830","articulo":"SALCHICHA HOT DOG AMERICANA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"27757","sap":"10100791","articulo":"MORCILLA NEGRA ENTERA - BLACK PUDING","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"28025","sap":"10100775","articulo":"CARNE GUISANTE VEGANO PURE","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"28592","sap":"10100710","articulo":"SALCHICHA INGLESA 50% PREMIUM","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1848","sap":"10101743","articulo":"PECHUGA DE POLLO AHUMADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"3611","sap":"10100370","articulo":"PECHUGA DE PAVO AHUMADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"4497","sap":"10100276","articulo":"CINTA LOMO CERDO AHUMADO","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"20273","sap":"10101578","articulo":"TERNERA AHUMADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"1852","sap":"10101749","articulo":"PALETA IBERICA DESHUESADA","unidad":"KILOGRAMO"},{"familia":"03. CARNES","dali":"9065","sap":"10103204","articulo":"JAMON IBERICO DE BELLOTA RSVA (SOBRE)","unidad":"KILOGRAMO"}];
+  <div class="panel">
+    <div class="search-block">
+      <label class="search-label" for="buscadorGeneral">Buscador general</label>
+      <div class="search-row">
+        <input id="buscadorGeneral" class="search-input" type="text" placeholder="Buscar por código DALI, código SAP o nombre del artículo" />
+        <button class="btn-clear" id="btnLimpiar" type="button">Limpiar</button>
+      </div>
+      <div class="helper" id="helper"><span style="color:var(--ok)">●</span> 374 artículos cargados</div>
+    </div>
+    <div id="familiasContainer" class="familias">
+      
+    <section class="familia open" data-familia="01. frutas y verduras frescas">
+      <button class="familia-header" type="button" aria-expanded="true">
+        <div class="familia-left">
+          <div class="familia-title">01. FRUTAS Y VERDURAS FRESCAS</div>
+          <div class="familia-sub"><span class="total-count">143</span> artículos</div>
+        </div>
+        <div class="familia-right">
+          <div class="count"><span class="visible-count">143</span> resultados</div>
+          <div class="arrow">›</div>
+        </div>
+      </button>
+      <div class="familia-body">
+        <div class="tabla-wrap">
+          <table>
+            <thead><tr><th>DALI</th><th>SAP</th><th>Artículo</th><th>Unidad</th></tr></thead>
+            <tbody>
+              <tr data-search="2018  acelgas"><td class="codigo">2018</td><td class="codigo">&mdash;</td><td class="articulo">ACELGAS</td><td>KG.</td></tr><tr data-search="3622  achicorias-radicho"><td class="codigo">3622</td><td class="codigo">&mdash;</td><td class="articulo">ACHICORIAS-RADICHO</td><td>KG.</td></tr><tr data-search="1956  aguacate"><td class="codigo">1956</td><td class="codigo">&mdash;</td><td class="articulo">AGUACATE</td><td>KG.</td></tr><tr data-search="2020  ajos en ristra"><td class="codigo">2020</td><td class="codigo">&mdash;</td><td class="articulo">AJOS EN RISTRA</td><td>KG.</td></tr><tr data-search="2021  ajos extra super flor"><td class="codigo">2021</td><td class="codigo">&mdash;</td><td class="articulo">AJOS EXTRA SUPER FLOR</td><td>KG.</td></tr><tr data-search="2022  ajos pelados frescos"><td class="codigo">2022</td><td class="codigo">&mdash;</td><td class="articulo">AJOS PELADOS FRESCOS</td><td>KG.</td></tr><tr data-search="3897  albahaca fresca"><td class="codigo">3897</td><td class="codigo">&mdash;</td><td class="articulo">ALBAHACA FRESCA</td><td>KG.</td></tr><tr data-search="2024  apio"><td class="codigo">2024</td><td class="codigo">&mdash;</td><td class="articulo">APIO</td><td>KG.</td></tr><tr data-search="1958  arandanos frescos"><td class="codigo">1958</td><td class="codigo">&mdash;</td><td class="articulo">ARANDANOS FRESCOS</td><td>KG.</td></tr><tr data-search="2470  batata amarilla"><td class="codigo">2470</td><td class="codigo">&mdash;</td><td class="articulo">BATATA AMARILLA</td><td>KG.</td></tr><tr data-search="18497  berenjena"><td class="codigo">18497</td><td class="codigo">&mdash;</td><td class="articulo">BERENJENA</td><td>KG.</td></tr><tr data-search="2027  berros"><td class="codigo">2027</td><td class="codigo">&mdash;</td><td class="articulo">BERROS</td><td>KG.</td></tr><tr data-search="2028  beterrada cocida"><td class="codigo">2028</td><td class="codigo">&mdash;</td><td class="articulo">BETERRADA COCIDA</td><td>KG.</td></tr><tr data-search="8456  brote de cebolla fresco"><td class="codigo">8456</td><td class="codigo">&mdash;</td><td class="articulo">BROTE DE CEBOLLA FRESCO</td><td>UNID.</td></tr><tr data-search="8453  brotes de ajo fresco"><td class="codigo">8453</td><td class="codigo">&mdash;</td><td class="articulo">BROTES DE AJO FRESCO</td><td>UNID.</td></tr><tr data-search="17474  brotes de alfalfa"><td class="codigo">17474</td><td class="codigo">&mdash;</td><td class="articulo">BROTES DE ALFALFA</td><td>UNID.</td></tr><tr data-search="8452  brotes de esparragos frescos"><td class="codigo">8452</td><td class="codigo">&mdash;</td><td class="articulo">BROTES DE ESPARRAGOS FRESCOS</td><td>UNID.</td></tr><tr data-search="8454  brotes de lentejas frescos"><td class="codigo">8454</td><td class="codigo">&mdash;</td><td class="articulo">BROTES DE LENTEJAS FRESCOS</td><td>UNID.</td></tr><tr data-search="2029  brotes de soja granel natural"><td class="codigo">2029</td><td class="codigo">&mdash;</td><td class="articulo">BROTES DE SOJA GRANEL NATURAL</td><td>KG.</td></tr><tr data-search="2030  calabacin"><td class="codigo">2030</td><td class="codigo">&mdash;</td><td class="articulo">CALABACIN</td><td>KG.</td></tr><tr data-search="14438  calabacin zuquini"><td class="codigo">14438</td><td class="codigo">&mdash;</td><td class="articulo">CALABACIN ZUQUINI</td><td>KG.</td></tr><tr data-search="13405  calabaza"><td class="codigo">13405</td><td class="codigo">&mdash;</td><td class="articulo">CALABAZA</td><td>KG.</td></tr><tr data-search="2033  canonigos mache"><td class="codigo">2033</td><td class="codigo">&mdash;</td><td class="articulo">CANONIGOS MACHE</td><td>KG.</td></tr><tr data-search="1959  caquis"><td class="codigo">1959</td><td class="codigo">&mdash;</td><td class="articulo">CAQUIS</td><td>KG.</td></tr><tr data-search="1960  carambola"><td class="codigo">1960</td><td class="codigo">&mdash;</td><td class="articulo">CARAMBOLA</td><td>KG.</td></tr><tr data-search="14583  cebolla pelada fresca"><td class="codigo">14583</td><td class="codigo">&mdash;</td><td class="articulo">CEBOLLA PELADA FRESCA</td><td>KG.</td></tr><tr data-search="2476  cebollas blanca"><td class="codigo">2476</td><td class="codigo">&mdash;</td><td class="articulo">CEBOLLAS BLANCA</td><td>KG.</td></tr><tr data-search="2475  cebollas moradas"><td class="codigo">2475</td><td class="codigo">&mdash;</td><td class="articulo">CEBOLLAS MORADAS</td><td>KG.</td></tr><tr data-search="14007  cebolletas"><td class="codigo">14007</td><td class="codigo">&mdash;</td><td class="articulo">CEBOLLETAS</td><td>KG.</td></tr><tr data-search="2036  cebollino fresco (ciboulette)"><td class="codigo">2036</td><td class="codigo">&mdash;</td><td class="articulo">CEBOLLINO FRESCO (CIBOULETTE)</td><td>KG.</td></tr><tr data-search="4576  chalotas - echalote"><td class="codigo">4576</td><td class="codigo">&mdash;</td><td class="articulo">CHALOTAS - ECHALOTE</td><td>KG.</td></tr><tr data-search="2477  champiñon granel"><td class="codigo">2477</td><td class="codigo">&mdash;</td><td class="articulo">CHAMPIÑON GRANEL</td><td>KG.</td></tr><tr data-search="13585  champiñon laminado"><td class="codigo">13585</td><td class="codigo">&mdash;</td><td class="articulo">CHAMPIÑON LAMINADO</td><td>KG.</td></tr><tr data-search="20728  chirivia"><td class="codigo">20728</td><td class="codigo">&mdash;</td><td class="articulo">CHIRIVIA</td><td>KG.</td></tr><tr data-search="3906  cilantro fresco"><td class="codigo">3906</td><td class="codigo">&mdash;</td><td class="articulo">CILANTRO FRESCO</td><td>KG.</td></tr><tr data-search="2479  ciruelas amarillas sungold"><td class="codigo">2479</td><td class="codigo">&mdash;</td><td class="articulo">CIRUELAS AMARILLAS SUNGOLD</td><td>KG.</td></tr><tr data-search="2480  ciruelas rojas santa rosa"><td class="codigo">2480</td><td class="codigo">&mdash;</td><td class="articulo">CIRUELAS ROJAS SANTA ROSA</td><td>KG.</td></tr><tr data-search="1965  cocos"><td class="codigo">1965</td><td class="codigo">&mdash;</td><td class="articulo">COCOS</td><td>UNID.</td></tr><tr data-search="3621  cogollo de tudela"><td class="codigo">3621</td><td class="codigo">&mdash;</td><td class="articulo">COGOLLO DE TUDELA</td><td>KG.</td></tr><tr data-search="2041  col blanca"><td class="codigo">2041</td><td class="codigo">&mdash;</td><td class="articulo">COL BLANCA</td><td>KG.</td></tr><tr data-search="2042  col china"><td class="codigo">2042</td><td class="codigo">&mdash;</td><td class="articulo">COL CHINA</td><td>KG.</td></tr><tr data-search="2043  col lombarda roja"><td class="codigo">2043</td><td class="codigo">&mdash;</td><td class="articulo">COL LOMBARDA ROJA</td><td>KG.</td></tr><tr data-search="2045  coliflor"><td class="codigo">2045</td><td class="codigo">&mdash;</td><td class="articulo">COLIFLOR</td><td>KG.</td></tr><tr data-search="4575  endivias"><td class="codigo">4575</td><td class="codigo">&mdash;</td><td class="articulo">ENDIVIAS</td><td>KG.</td></tr><tr data-search="4327  eneldo fresco - dill"><td class="codigo">4327</td><td class="codigo">&mdash;</td><td class="articulo">ENELDO FRESCO - DILL</td><td>KG.</td></tr><tr data-search="2049  escarolas"><td class="codigo">2049</td><td class="codigo">&mdash;</td><td class="articulo">ESCAROLAS</td><td>KG.</td></tr><tr data-search="2051  espinacas frescas"><td class="codigo">2051</td><td class="codigo">&mdash;</td><td class="articulo">ESPINACAS FRESCAS</td><td>KG.</td></tr><tr data-search="1967  flores comestibles"><td class="codigo">1967</td><td class="codigo">&mdash;</td><td class="articulo">FLORES COMESTIBLES</td><td>KG.</td></tr><tr data-search="1968  frambuesas frescas"><td class="codigo">1968</td><td class="codigo">&mdash;</td><td class="articulo">FRAMBUESAS FRESCAS</td><td>KG.</td></tr><tr data-search="1969  fresas granel frescas"><td class="codigo">1969</td><td class="codigo">&mdash;</td><td class="articulo">FRESAS GRANEL FRESCAS</td><td>KG.</td></tr><tr data-search="21485  germinado de ajo"><td class="codigo">21485</td><td class="codigo">&mdash;</td><td class="articulo">GERMINADO DE AJO</td><td>KG.</td></tr><tr data-search="1971  granada"><td class="codigo">1971</td><td class="codigo">&mdash;</td><td class="articulo">GRANADA</td><td>KG.</td></tr><tr data-search="1972  grosella fresca"><td class="codigo">1972</td><td class="codigo">&mdash;</td><td class="articulo">GROSELLA FRESCA</td><td>KG.</td></tr><tr data-search="1973  guayabos"><td class="codigo">1973</td><td class="codigo">&mdash;</td><td class="articulo">GUAYABOS</td><td>KG.</td></tr><tr data-search="2052  habichuela - judia boby (redonda)"><td class="codigo">2052</td><td class="codigo">&mdash;</td><td class="articulo">HABICHUELA - JUDIA BOBY (REDONDA)</td><td>KG.</td></tr><tr data-search="2484  habichuela - judia helda (plana)"><td class="codigo">2484</td><td class="codigo">&mdash;</td><td class="articulo">HABICHUELA - JUDIA HELDA (PLANA)</td><td>KG.</td></tr><tr data-search="13524  hierba huerto fresco"><td class="codigo">13524</td><td class="codigo">&mdash;</td><td class="articulo">HIERBA HUERTO FRESCO</td><td>KG.</td></tr><tr data-search="2046  hinojo raiz - corazon"><td class="codigo">2046</td><td class="codigo">&mdash;</td><td class="articulo">HINOJO RAIZ - CORAZON</td><td>KG.</td></tr><tr data-search="2055  jengibre fresco"><td class="codigo">2055</td><td class="codigo">&mdash;</td><td class="articulo">JENGIBRE FRESCO</td><td>KG.</td></tr><tr data-search="12958  kiwi amarillo - gold"><td class="codigo">12958</td><td class="codigo">&mdash;</td><td class="articulo">KIWI AMARILLO - GOLD</td><td>KG.</td></tr><tr data-search="13408  kiwi verde"><td class="codigo">13408</td><td class="codigo">&mdash;</td><td class="articulo">KIWI VERDE</td><td>KG.</td></tr><tr data-search="3510  lechuga batavia"><td class="codigo">3510</td><td class="codigo">&mdash;</td><td class="articulo">LECHUGA BATAVIA</td><td>KG.</td></tr><tr data-search="14367  lechuga hoja de roble"><td class="codigo">14367</td><td class="codigo">&mdash;</td><td class="articulo">LECHUGA HOJA DE ROBLE</td><td>KG.</td></tr><tr data-search="3509  lechuga iceberg"><td class="codigo">3509</td><td class="codigo">&mdash;</td><td class="articulo">LECHUGA ICEBERG</td><td>KG.</td></tr><tr data-search="13514  lechuga lollo bionda verde"><td class="codigo">13514</td><td class="codigo">&mdash;</td><td class="articulo">LECHUGA LOLLO BIONDA VERDE</td><td>KG.</td></tr><tr data-search="13515  lechuga lollo rosa"><td class="codigo">13515</td><td class="codigo">&mdash;</td><td class="articulo">LECHUGA LOLLO ROSA</td><td>KG.</td></tr><tr data-search="13507  lechuga romana"><td class="codigo">13507</td><td class="codigo">&mdash;</td><td class="articulo">LECHUGA ROMANA</td><td>KG.</td></tr><tr data-search="1975  lima fresca"><td class="codigo">1975</td><td class="codigo">&mdash;</td><td class="articulo">LIMA FRESCA</td><td>KG.</td></tr><tr data-search="13733  limon amarillo"><td class="codigo">13733</td><td class="codigo">&mdash;</td><td class="articulo">LIMON AMARILLO</td><td>KG.</td></tr><tr data-search="1976  limones verdes"><td class="codigo">1976</td><td class="codigo">&mdash;</td><td class="articulo">LIMONES VERDES</td><td>KG.</td></tr><tr data-search="13509  maiz dulce cocido"><td class="codigo">13509</td><td class="codigo">&mdash;</td><td class="articulo">MAIZ DULCE COCIDO</td><td>KG.</td></tr><tr data-search="14233  mandarina"><td class="codigo">14233</td><td class="codigo">&mdash;</td><td class="articulo">MANDARINA</td><td>KG.</td></tr><tr data-search="9367  manzana fuji"><td class="codigo">9367</td><td class="codigo">&mdash;</td><td class="articulo">MANZANA FUJI</td><td>KG.</td></tr><tr data-search="9359  manzana golden calibre 24"><td class="codigo">9359</td><td class="codigo">&mdash;</td><td class="articulo">MANZANA GOLDEN CALIBRE 24</td><td>KG.</td></tr><tr data-search="13403  manzana granny smith"><td class="codigo">13403</td><td class="codigo">&mdash;</td><td class="articulo">MANZANA GRANNY SMITH</td><td>KG.</td></tr><tr data-search="14543  manzana pink lady"><td class="codigo">14543</td><td class="codigo">&mdash;</td><td class="articulo">MANZANA PINK LADY</td><td>KG.</td></tr><tr data-search="14193  manzana roja calibre 24"><td class="codigo">14193</td><td class="codigo">&mdash;</td><td class="articulo">MANZANA ROJA CALIBRE 24</td><td>KG.</td></tr><tr data-search="1982  melocoton"><td class="codigo">1982</td><td class="codigo">&mdash;</td><td class="articulo">MELOCOTON</td><td>KG.</td></tr><tr data-search="1983  melon piel de sapo"><td class="codigo">1983</td><td class="codigo">&mdash;</td><td class="articulo">MELON PIEL DE SAPO</td><td>KG.</td></tr><tr data-search="9092  menta fresca"><td class="codigo">9092</td><td class="codigo">&mdash;</td><td class="articulo">MENTA FRESCA</td><td>KG.</td></tr><tr data-search="1984  moras fresca"><td class="codigo">1984</td><td class="codigo">&mdash;</td><td class="articulo">MORAS FRESCA</td><td>KG.</td></tr><tr data-search="2064  nabos"><td class="codigo">2064</td><td class="codigo">&mdash;</td><td class="articulo">NABOS</td><td>KG.</td></tr><tr data-search="25624  naranjas maquina zumo"><td class="codigo">25624</td><td class="codigo">&mdash;</td><td class="articulo">NARANJAS MAQUINA ZUMO</td><td>KG.</td></tr><tr data-search="13508  naranjas navel extra de mesa"><td class="codigo">13508</td><td class="codigo">&mdash;</td><td class="articulo">NARANJAS NAVEL EXTRA DE MESA</td><td>KG.</td></tr><tr data-search="1986  nectarina"><td class="codigo">1986</td><td class="codigo">&mdash;</td><td class="articulo">NECTARINA</td><td>KG.</td></tr><tr data-search="10701  ñame"><td class="codigo">10701</td><td class="codigo">&mdash;</td><td class="articulo">ÑAME</td><td>KG.</td></tr><tr data-search="14064  ñoras en ristra - pimienta seca"><td class="codigo">14064</td><td class="codigo">&mdash;</td><td class="articulo">ÑORAS EN RISTRA - PIMIENTA SECA</td><td>KG.</td></tr><tr data-search="12310  papa pelada brava"><td class="codigo">12310</td><td class="codigo">&mdash;</td><td class="articulo">PAPA PELADA BRAVA</td><td>KG.</td></tr><tr data-search="6862  papa pelada cuadros para tortilla"><td class="codigo">6862</td><td class="codigo">&mdash;</td><td class="articulo">PAPA PELADA CUADROS PARA TORTILLA</td><td>KG.</td></tr><tr data-search="18605  papa pelada entera"><td class="codigo">18605</td><td class="codigo">&mdash;</td><td class="articulo">PAPA PELADA ENTERA</td><td>KG.</td></tr><tr data-search="13158  papa pelada panadera"><td class="codigo">13158</td><td class="codigo">&mdash;</td><td class="articulo">PAPA PELADA PANADERA</td><td>KG.</td></tr><tr data-search="13448  papas de arrugar"><td class="codigo">13448</td><td class="codigo">&mdash;</td><td class="articulo">PAPAS DE ARRUGAR</td><td>KG.</td></tr><tr data-search="26069  papas de arrugar especial lavadas"><td class="codigo">26069</td><td class="codigo">&mdash;</td><td class="articulo">PAPAS DE ARRUGAR ESPECIAL LAVADAS</td><td>KG.</td></tr><tr data-search="2068  papas folio"><td class="codigo">2068</td><td class="codigo">&mdash;</td><td class="articulo">PAPAS FOLIO</td><td>KG.</td></tr><tr data-search="1988  papayas"><td class="codigo">1988</td><td class="codigo">&mdash;</td><td class="articulo">PAPAYAS</td><td>KG.</td></tr><tr data-search="11563  paraguayo"><td class="codigo">11563</td><td class="codigo">&mdash;</td><td class="articulo">PARAGUAYO</td><td>KG.</td></tr><tr data-search="2071  pepinos"><td class="codigo">2071</td><td class="codigo">&mdash;</td><td class="articulo">PEPINOS</td><td>KG.</td></tr><tr data-search="9366  pera conferencia"><td class="codigo">9366</td><td class="codigo">&mdash;</td><td class="articulo">PERA CONFERENCIA</td><td>KG.</td></tr><tr data-search="13790  pera devoer"><td class="codigo">13790</td><td class="codigo">&mdash;</td><td class="articulo">PERA DEVOER</td><td>KG.</td></tr><tr data-search="13449  peras ercolini"><td class="codigo">13449</td><td class="codigo">&mdash;</td><td class="articulo">PERAS ERCOLINI</td><td>KG.</td></tr><tr data-search="3907  perejil fresco"><td class="codigo">3907</td><td class="codigo">&mdash;</td><td class="articulo">PEREJIL FRESCO</td><td>KG.</td></tr><tr data-search="13622  perifollo fresco"><td class="codigo">13622</td><td class="codigo">&mdash;</td><td class="articulo">PERIFOLLO FRESCO</td><td>KG.</td></tr><tr data-search="2483  pimienta picante roja - guindilla"><td class="codigo">2483</td><td class="codigo">&mdash;</td><td class="articulo">PIMIENTA PICANTE ROJA - GUINDILLA</td><td>KG.</td></tr><tr data-search="21284  pimienta picante verde"><td class="codigo">21284</td><td class="codigo">&mdash;</td><td class="articulo">PIMIENTA PICANTE VERDE</td><td>KG.</td></tr><tr data-search="4394  pimiento italiano rojo"><td class="codigo">4394</td><td class="codigo">&mdash;</td><td class="articulo">PIMIENTO ITALIANO ROJO</td><td>KG.</td></tr><tr data-search="19292  pimiento italiano verde"><td class="codigo">19292</td><td class="codigo">&mdash;</td><td class="articulo">PIMIENTO ITALIANO VERDE</td><td>KG.</td></tr><tr data-search="2077  pimiento rojo extra"><td class="codigo">2077</td><td class="codigo">&mdash;</td><td class="articulo">PIMIENTO ROJO EXTRA</td><td>KG.</td></tr><tr data-search="2074  pimientos amarillos"><td class="codigo">2074</td><td class="codigo">&mdash;</td><td class="articulo">PIMIENTOS AMARILLOS</td><td>KG.</td></tr><tr data-search="2076  pimientos de padron"><td class="codigo">2076</td><td class="codigo">&mdash;</td><td class="articulo">PIMIENTOS DE PADRON</td><td>KG.</td></tr><tr data-search="13195  pimientos verde extra"><td class="codigo">13195</td><td class="codigo">&mdash;</td><td class="articulo">PIMIENTOS VERDE EXTRA</td><td>KG.</td></tr><tr data-search="4577  piña de platanos"><td class="codigo">4577</td><td class="codigo">&mdash;</td><td class="articulo">PIÑA DE PLATANOS</td><td>KG.</td></tr><tr data-search="2079  piña millo - mazorca maiz"><td class="codigo">2079</td><td class="codigo">&mdash;</td><td class="articulo">PIÑA MILLO - MAZORCA MAIZ</td><td>KG.</td></tr><tr data-search="16093  piña tropical extra"><td class="codigo">16093</td><td class="codigo">&mdash;</td><td class="articulo">PIÑA TROPICAL EXTRA</td><td>KG.</td></tr><tr data-search="13381  platano manilla primera"><td class="codigo">13381</td><td class="codigo">&mdash;</td><td class="articulo">PLATANO MANILLA PRIMERA</td><td>KG.</td></tr><tr data-search="1994  platanos sueltos"><td class="codigo">1994</td><td class="codigo">&mdash;</td><td class="articulo">PLATANOS SUELTOS</td><td>KG.</td></tr><tr data-search="1995  pomelos amarillos"><td class="codigo">1995</td><td class="codigo">&mdash;</td><td class="articulo">POMELOS AMARILLOS</td><td>KG.</td></tr><tr data-search="2494  pomelos rojos"><td class="codigo">2494</td><td class="codigo">&mdash;</td><td class="articulo">POMELOS ROJOS</td><td>KG.</td></tr><tr data-search="2080  puerros"><td class="codigo">2080</td><td class="codigo">&mdash;</td><td class="articulo">PUERROS</td><td>KG.</td></tr><tr data-search="2081  rabanillos"><td class="codigo">2081</td><td class="codigo">&mdash;</td><td class="articulo">RABANILLOS</td><td>KG.</td></tr><tr data-search="13675  rabano daikon nabo largo"><td class="codigo">13675</td><td class="codigo">&mdash;</td><td class="articulo">RABANO DAIKON NABO LARGO</td><td>KG.</td></tr><tr data-search="2082  rabanos"><td class="codigo">2082</td><td class="codigo">&mdash;</td><td class="articulo">RABANOS</td><td>KG.</td></tr><tr data-search="17408  raiz de apio - apio bola"><td class="codigo">17408</td><td class="codigo">&mdash;</td><td class="articulo">RAIZ DE APIO - APIO BOLA</td><td>KG.</td></tr><tr data-search="13520  romero fresco"><td class="codigo">13520</td><td class="codigo">&mdash;</td><td class="articulo">ROMERO FRESCO</td><td>KG.</td></tr><tr data-search="2084  rucula verde"><td class="codigo">2084</td><td class="codigo">&mdash;</td><td class="articulo">RUCULA VERDE</td><td>KG.</td></tr><tr data-search="1996  salvia blanca"><td class="codigo">1996</td><td class="codigo">&mdash;</td><td class="articulo">SALVIA BLANCA</td><td>KG.</td></tr><tr data-search="13901  sandia negra"><td class="codigo">13901</td><td class="codigo">&mdash;</td><td class="articulo">SANDIA NEGRA</td><td>KG.</td></tr><tr data-search="13734  sandias blancas"><td class="codigo">13734</td><td class="codigo">&mdash;</td><td class="articulo">SANDIAS BLANCAS</td><td>KG.</td></tr><tr data-search="2085  setas granel"><td class="codigo">2085</td><td class="codigo">&mdash;</td><td class="articulo">SETAS GRANEL</td><td>KG.</td></tr><tr data-search="18037  tomate cherry amarillo"><td class="codigo">18037</td><td class="codigo">&mdash;</td><td class="articulo">TOMATE CHERRY AMARILLO</td><td>KG.</td></tr><tr data-search="2087  tomate cherry granel"><td class="codigo">2087</td><td class="codigo">&mdash;</td><td class="articulo">TOMATE CHERRY GRANEL</td><td>KG.</td></tr><tr data-search="14266  tomate cherry pera granel"><td class="codigo">14266</td><td class="codigo">&mdash;</td><td class="articulo">TOMATE CHERRY PERA GRANEL</td><td>KG.</td></tr><tr data-search="17894  tomate cherry tricolor"><td class="codigo">17894</td><td class="codigo">&mdash;</td><td class="articulo">TOMATE CHERRY TRICOLOR</td><td>KG.</td></tr><tr data-search="7735  tomate mediano"><td class="codigo">7735</td><td class="codigo">&mdash;</td><td class="articulo">TOMATE MEDIANO</td><td>KG.</td></tr><tr data-search="3620  tomate parrilla"><td class="codigo">3620</td><td class="codigo">&mdash;</td><td class="articulo">TOMATE PARRILLA</td><td>KG.</td></tr><tr data-search="9450  tomate rama"><td class="codigo">9450</td><td class="codigo">&mdash;</td><td class="articulo">TOMATE RAMA</td><td>KG.</td></tr><tr data-search="2089  tomates ensalada"><td class="codigo">2089</td><td class="codigo">&mdash;</td><td class="articulo">TOMATES ENSALADA</td><td>KG.</td></tr><tr data-search="2090  tomillo rama"><td class="codigo">2090</td><td class="codigo">&mdash;</td><td class="articulo">TOMILLO RAMA</td><td>KG.</td></tr><tr data-search="1999  uvas blancas"><td class="codigo">1999</td><td class="codigo">&mdash;</td><td class="articulo">UVAS BLANCAS</td><td>KG.</td></tr><tr data-search="14855  uvas moradas red"><td class="codigo">14855</td><td class="codigo">&mdash;</td><td class="articulo">UVAS MORADAS RED</td><td>KG.</td></tr><tr data-search="13432  zanahoria peninsula"><td class="codigo">13432</td><td class="codigo">&mdash;</td><td class="articulo">ZANAHORIA PENINSULA</td><td>KG.</td></tr><tr data-search="2388  huevos frescos"><td class="codigo">2388</td><td class="codigo">&mdash;</td><td class="articulo">HUEVOS FRESCOS</td><td>BAND. 30</td></tr><tr data-search="8357  calabaza halloween"><td class="codigo">8357</td><td class="codigo">&mdash;</td><td class="articulo">CALABAZA HALLOWEEN</td><td>UNID.</td></tr><tr data-search="2000  uvas de la suerte - fin de año"><td class="codigo">2000</td><td class="codigo">&mdash;</td><td class="articulo">UVAS DE LA SUERTE - FIN DE AÑO</td><td>UNID.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty" hidden>Sin resultados</div>
+      </div>
+    </section>
+    <section class="familia open" data-familia="02. pescados">
+      <button class="familia-header" type="button" aria-expanded="true">
+        <div class="familia-left">
+          <div class="familia-title">02. PESCADOS</div>
+          <div class="familia-sub"><span class="total-count">95</span> artículos</div>
+        </div>
+        <div class="familia-right">
+          <div class="count"><span class="visible-count">95</span> resultados</div>
+          <div class="arrow">›</div>
+        </div>
+      </button>
+      <div class="familia-body">
+        <div class="tabla-wrap">
+          <table>
+            <thead><tr><th>DALI</th><th>SAP</th><th>Artículo</th><th>Unidad</th></tr></thead>
+            <tbody>
+              <tr data-search="1453  boquerones en vinagre"><td class="codigo">1453</td><td class="codigo">&mdash;</td><td class="articulo">BOQUERONES EN VINAGRE</td><td>&mdash;</td></tr><tr data-search="1860  filete cherne con piel cong. (eventos)"><td class="codigo">1860</td><td class="codigo">&mdash;</td><td class="articulo">FILETE CHERNE CON PIEL CONG. (EVENTOS)</td><td>&mdash;</td></tr><tr data-search="1864  filete de bacalao con piel cong."><td class="codigo">1864</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DE BACALAO CON PIEL CONG.</td><td>&mdash;</td></tr><tr data-search="1866  filete de caballa con piel cong."><td class="codigo">1866</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DE CABALLA CON PIEL CONG.</td><td>&mdash;</td></tr><tr data-search="1867  filete fogonero sin piel islandia cong."><td class="codigo">1867</td><td class="codigo">&mdash;</td><td class="articulo">FILETE FOGONERO SIN PIEL ISLANDIA CONG.</td><td>&mdash;</td></tr><tr data-search="1872  filete de merluza sin piel argentino cong."><td class="codigo">1872</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DE MERLUZA SIN PIEL ARGENTINO CONG.</td><td>&mdash;</td></tr><tr data-search="1873  filete  palometa sin piel cong."><td class="codigo">1873</td><td class="codigo">&mdash;</td><td class="articulo">FILETE  PALOMETA SIN PIEL CONG.</td><td>&mdash;</td></tr><tr data-search="1877  filete sardina cong."><td class="codigo">1877</td><td class="codigo">&mdash;</td><td class="articulo">FILETE SARDINA CONG.</td><td>&mdash;</td></tr><tr data-search="1879  filete tilapia sin piel cong."><td class="codigo">1879</td><td class="codigo">&mdash;</td><td class="articulo">FILETE TILAPIA SIN PIEL CONG.</td><td>&mdash;</td></tr><tr data-search="1881  lengua limpia g (400/500gr) cong."><td class="codigo">1881</td><td class="codigo">&mdash;</td><td class="articulo">LENGUA LIMPIA G (400/500GR) CONG.</td><td>&mdash;</td></tr><tr data-search="1885  trucha desvicerada blanca cong."><td class="codigo">1885</td><td class="codigo">&mdash;</td><td class="articulo">TRUCHA DESVICERADA BLANCA CONG.</td><td>&mdash;</td></tr><tr data-search="1889  cherne entero con cabeza cong."><td class="codigo">1889</td><td class="codigo">&mdash;</td><td class="articulo">CHERNE ENTERO CON CABEZA CONG.</td><td>&mdash;</td></tr><tr data-search="1890  cola de rape gran sol 2,5/3,5 kg.  cong."><td class="codigo">1890</td><td class="codigo">&mdash;</td><td class="articulo">COLA DE RAPE GRAN SOL 2,5/3,5 KG.  CONG.</td><td>&mdash;</td></tr><tr data-search="1893  lomo bacalao cong."><td class="codigo">1893</td><td class="codigo">&mdash;</td><td class="articulo">LOMO BACALAO CONG.</td><td>&mdash;</td></tr><tr data-search="1896  lomo de moro cong."><td class="codigo">1896</td><td class="codigo">&mdash;</td><td class="articulo">LOMO DE MORO CONG.</td><td>&mdash;</td></tr><tr data-search="1901  salmon rodajas alaska cong."><td class="codigo">1901</td><td class="codigo">&mdash;</td><td class="articulo">SALMON RODAJAS ALASKA CONG.</td><td>&mdash;</td></tr><tr data-search="3224  lomo de merluza sin piel congelado"><td class="codigo">3224</td><td class="codigo">&mdash;</td><td class="articulo">LOMO DE MERLUZA SIN PIEL CONGELADO</td><td>&mdash;</td></tr><tr data-search="3891  filete de lenguado cong."><td class="codigo">3891</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DE LENGUADO CONG.</td><td>&mdash;</td></tr><tr data-search="4512  lomos de pez espada cong."><td class="codigo">4512</td><td class="codigo">&mdash;</td><td class="articulo">LOMOS DE PEZ ESPADA CONG.</td><td>&mdash;</td></tr><tr data-search="4514  ventrescas merluza con piel cong."><td class="codigo">4514</td><td class="codigo">&mdash;</td><td class="articulo">VENTRESCAS MERLUZA CON PIEL CONG.</td><td>&mdash;</td></tr><tr data-search="6858  filete perca s/piel 500/1000 cong."><td class="codigo">6858</td><td class="codigo">&mdash;</td><td class="articulo">FILETE PERCA S/PIEL 500/1000 CONG.</td><td>&mdash;</td></tr><tr data-search="8669  filete cherne sin piel cong."><td class="codigo">8669</td><td class="codigo">&mdash;</td><td class="articulo">FILETE CHERNE SIN PIEL CONG.</td><td>&mdash;</td></tr><tr data-search="11333  filete de trucha asalmonada cong."><td class="codigo">11333</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DE TRUCHA ASALMONADA CONG.</td><td>&mdash;</td></tr><tr data-search="12111  bacalao lomo yumbo cong."><td class="codigo">12111</td><td class="codigo">&mdash;</td><td class="articulo">BACALAO LOMO YUMBO CONG.</td><td>&mdash;</td></tr><tr data-search="13589  lomo de merluza  con piel congelado"><td class="codigo">13589</td><td class="codigo">&mdash;</td><td class="articulo">LOMO DE MERLUZA  CON PIEL CONGELADO</td><td>&mdash;</td></tr><tr data-search="13826  bacalao porcionado congelado"><td class="codigo">13826</td><td class="codigo">&mdash;</td><td class="articulo">BACALAO PORCIONADO CONGELADO</td><td>&mdash;</td></tr><tr data-search="14455  filete gallineta con piel glaseo protec. cong."><td class="codigo">14455</td><td class="codigo">&mdash;</td><td class="articulo">FILETE GALLINETA CON PIEL GLASEO PROTEC. CONG.</td><td>&mdash;</td></tr><tr data-search="19058  filete gallineta con piel nórdica glaseo 20%"><td class="codigo">19058</td><td class="codigo">&mdash;</td><td class="articulo">FILETE GALLINETA CON PIEL NÓRDICA GLASEO 20%</td><td>&mdash;</td></tr><tr data-search="15140  filete fogonero con piel cong."><td class="codigo">15140</td><td class="codigo">&mdash;</td><td class="articulo">FILETE FOGONERO CON PIEL CONG.</td><td>&mdash;</td></tr><tr data-search="15885  salmon en porciones salar cong."><td class="codigo">15885</td><td class="codigo">&mdash;</td><td class="articulo">SALMON EN PORCIONES SALAR CONG.</td><td>&mdash;</td></tr><tr data-search="16069  rodaja de merluza grande"><td class="codigo">16069</td><td class="codigo">&mdash;</td><td class="articulo">RODAJA DE MERLUZA GRANDE</td><td>&mdash;</td></tr><tr data-search="16157  lengua limpia m (200/300) cong."><td class="codigo">16157</td><td class="codigo">&mdash;</td><td class="articulo">LENGUA LIMPIA M (200/300) CONG.</td><td>&mdash;</td></tr><tr data-search="16159  filete de bacalao con piel glaseo 5%"><td class="codigo">16159</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DE BACALAO CON PIEL GLASEO 5%</td><td>&mdash;</td></tr><tr data-search="16168  filete de merluza con piel argentina"><td class="codigo">16168</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DE MERLUZA CON PIEL ARGENTINA</td><td>&mdash;</td></tr><tr data-search="16228  filete perca sin piel (1000/2000) cong."><td class="codigo">16228</td><td class="codigo">&mdash;</td><td class="articulo">FILETE PERCA SIN PIEL (1000/2000) CONG.</td><td>&mdash;</td></tr><tr data-search="16238  salmon filete chile extra congelado"><td class="codigo">16238</td><td class="codigo">&mdash;</td><td class="articulo">SALMON FILETE CHILE EXTRA CONGELADO</td><td>&mdash;</td></tr><tr data-search="16516  filete dorada con piel congelado"><td class="codigo">16516</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DORADA CON PIEL CONGELADO</td><td>&mdash;</td></tr><tr data-search="16609  atun tacos congelado"><td class="codigo">16609</td><td class="codigo">&mdash;</td><td class="articulo">ATUN TACOS CONGELADO</td><td>&mdash;</td></tr><tr data-search="16929  salmon entero chile con cabeza cong."><td class="codigo">16929</td><td class="codigo">&mdash;</td><td class="articulo">SALMON ENTERO CHILE CON CABEZA CONG.</td><td>&mdash;</td></tr><tr data-search="17940  cola de rape 200/300 congelado"><td class="codigo">17940</td><td class="codigo">&mdash;</td><td class="articulo">COLA DE RAPE 200/300 CONGELADO</td><td>&mdash;</td></tr><tr data-search="18023  filete dorado sin piel cong."><td class="codigo">18023</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DORADO SIN PIEL CONG.</td><td>&mdash;</td></tr><tr data-search="18029  merluza sin cabeza cong."><td class="codigo">18029</td><td class="codigo">&mdash;</td><td class="articulo">MERLUZA SIN CABEZA CONG.</td><td>&mdash;</td></tr><tr data-search="18212  lomo atun sin sangacho congelado"><td class="codigo">18212</td><td class="codigo">&mdash;</td><td class="articulo">LOMO ATUN SIN SANGACHO CONGELADO</td><td>&mdash;</td></tr><tr data-search="18240  lomo bacalao 200-300 gr selecto"><td class="codigo">18240</td><td class="codigo">&mdash;</td><td class="articulo">LOMO BACALAO 200-300 GR SELECTO</td><td>&mdash;</td></tr><tr data-search="18448  salmon ahumado precortado chile cong."><td class="codigo">18448</td><td class="codigo">&mdash;</td><td class="articulo">SALMON AHUMADO PRECORTADO CHILE CONG.</td><td>&mdash;</td></tr><tr data-search="18501  salmon marinado precortado chile cong."><td class="codigo">18501</td><td class="codigo">&mdash;</td><td class="articulo">SALMON MARINADO PRECORTADO CHILE CONG.</td><td>&mdash;</td></tr><tr data-search="19001  filete de merluza sin piel sudafrica cog."><td class="codigo">19001</td><td class="codigo">&mdash;</td><td class="articulo">FILETE DE MERLUZA SIN PIEL SUDAFRICA COG.</td><td>&mdash;</td></tr><tr data-search="19060  filete lubina con piel congelado"><td class="codigo">19060</td><td class="codigo">&mdash;</td><td class="articulo">FILETE LUBINA CON PIEL CONGELADO</td><td>&mdash;</td></tr><tr data-search="20145  lengua limpia gg +500 congelado"><td class="codigo">20145</td><td class="codigo">&mdash;</td><td class="articulo">LENGUA LIMPIA GG +500 CONGELADO</td><td>&mdash;</td></tr><tr data-search="25190  filete fletan congelado"><td class="codigo">25190</td><td class="codigo">&mdash;</td><td class="articulo">FILETE FLETAN CONGELADO</td><td>&mdash;</td></tr><tr data-search="25205  filete panchito con piel cong."><td class="codigo">25205</td><td class="codigo">&mdash;</td><td class="articulo">FILETE PANCHITO CON PIEL CONG.</td><td>&mdash;</td></tr><tr data-search="26326  puntas de salmon noruego"><td class="codigo">26326</td><td class="codigo">&mdash;</td><td class="articulo">PUNTAS DE SALMON NORUEGO</td><td>&mdash;</td></tr><tr data-search="26358  lengua filete 60/90 gr cong."><td class="codigo">26358</td><td class="codigo">&mdash;</td><td class="articulo">LENGUA FILETE 60/90 GR CONG.</td><td>&mdash;</td></tr><tr data-search="27200  pez vela filete sin piel  cong."><td class="codigo">27200</td><td class="codigo">&mdash;</td><td class="articulo">PEZ VELA FILETE SIN PIEL  CONG.</td><td>&mdash;</td></tr><tr data-search="14337  porcion maruca con piel"><td class="codigo">14337</td><td class="codigo">&mdash;</td><td class="articulo">PORCION MARUCA CON PIEL</td><td>&mdash;</td></tr><tr data-search="29436  filete pez gato"><td class="codigo">29436</td><td class="codigo">&mdash;</td><td class="articulo">FILETE PEZ GATO</td><td>&mdash;</td></tr><tr data-search="1912  carne de mejillon chile cong."><td class="codigo">1912</td><td class="codigo">&mdash;</td><td class="articulo">CARNE DE MEJILLON CHILE CONG.</td><td>&mdash;</td></tr><tr data-search="1915  necoras cocidas cong."><td class="codigo">1915</td><td class="codigo">&mdash;</td><td class="articulo">NECORAS COCIDAS CONG.</td><td>&mdash;</td></tr><tr data-search="1916  pulpo g - congelado"><td class="codigo">1916</td><td class="codigo">&mdash;</td><td class="articulo">PULPO G - CONGELADO</td><td>&mdash;</td></tr><tr data-search="1919  tinta de calamar cong."><td class="codigo">1919</td><td class="codigo">&mdash;</td><td class="articulo">TINTA DE CALAMAR CONG.</td><td>&mdash;</td></tr><tr data-search="1922  almeja blanca cong."><td class="codigo">1922</td><td class="codigo">&mdash;</td><td class="articulo">ALMEJA BLANCA CONG.</td><td>&mdash;</td></tr><tr data-search="1924  calamar entero sahariano gg - g - m  congelado"><td class="codigo">1924</td><td class="codigo">&mdash;</td><td class="articulo">CALAMAR ENTERO SAHARIANO GG - G - M  CONGELADO</td><td>&mdash;</td></tr><tr data-search="1927  choco limpio 8/12 congelado"><td class="codigo">1927</td><td class="codigo">&mdash;</td><td class="articulo">CHOCO LIMPIO 8/12 CONGELADO</td><td>&mdash;</td></tr><tr data-search="1933  langostino nº 4  (50-60) cultivo congelado"><td class="codigo">1933</td><td class="codigo">&mdash;</td><td class="articulo">LANGOSTINO Nº 4  (50-60) CULTIVO CONGELADO</td><td>&mdash;</td></tr><tr data-search="1934  langostino nº 5  (60-70) cultivo congelado"><td class="codigo">1934</td><td class="codigo">&mdash;</td><td class="articulo">LANGOSTINO Nº 5  (60-70) CULTIVO CONGELADO</td><td>&mdash;</td></tr><tr data-search="1936  langostino nº 3 cultivo congelado"><td class="codigo">1936</td><td class="codigo">&mdash;</td><td class="articulo">LANGOSTINO Nº 3 CULTIVO CONGELADO</td><td>&mdash;</td></tr><tr data-search="1939  mejillon 1/2 concha chile cong."><td class="codigo">1939</td><td class="codigo">&mdash;</td><td class="articulo">MEJILLON 1/2 CONCHA CHILE CONG.</td><td>&mdash;</td></tr><tr data-search="3233  coctel de mariscos cong."><td class="codigo">3233</td><td class="codigo">&mdash;</td><td class="articulo">COCTEL DE MARISCOS CONG.</td><td>&mdash;</td></tr><tr data-search="4516  langostino cocido 40/60 cong."><td class="codigo">4516</td><td class="codigo">&mdash;</td><td class="articulo">LANGOSTINO COCIDO 40/60 CONG.</td><td>&mdash;</td></tr><tr data-search="4517  gambas peladas cocidas noruega cong."><td class="codigo">4517</td><td class="codigo">&mdash;</td><td class="articulo">GAMBAS PELADAS COCIDAS NORUEGA CONG.</td><td>&mdash;</td></tr><tr data-search="6861  langostinos pelado cong. 40/50"><td class="codigo">6861</td><td class="codigo">&mdash;</td><td class="articulo">LANGOSTINOS PELADO CONG. 40/50</td><td>&mdash;</td></tr><tr data-search="11464  pota rejos crudo cong."><td class="codigo">11464</td><td class="codigo">&mdash;</td><td class="articulo">POTA REJOS CRUDO CONG.</td><td>&mdash;</td></tr><tr data-search="13592  mejillon 1/2 concha cong.nueva zelanda"><td class="codigo">13592</td><td class="codigo">&mdash;</td><td class="articulo">MEJILLON 1/2 CONCHA CONG.NUEVA ZELANDA</td><td>&mdash;</td></tr><tr data-search="14032  gambon nº 1 cong."><td class="codigo">14032</td><td class="codigo">&mdash;</td><td class="articulo">GAMBON Nº 1 CONG.</td><td>&mdash;</td></tr><tr data-search="16126  choco limpio 13/20 congelado"><td class="codigo">16126</td><td class="codigo">&mdash;</td><td class="articulo">CHOCO LIMPIO 13/20 CONGELADO</td><td>&mdash;</td></tr><tr data-search="16169  rodaja poton cocido cong."><td class="codigo">16169</td><td class="codigo">&mdash;</td><td class="articulo">RODAJA POTON COCIDO CONG.</td><td>&mdash;</td></tr><tr data-search="17052  preparado paella cong."><td class="codigo">17052</td><td class="codigo">&mdash;</td><td class="articulo">PREPARADO PAELLA CONG.</td><td>&mdash;</td></tr><tr data-search="17962  anillas de pota cong."><td class="codigo">17962</td><td class="codigo">&mdash;</td><td class="articulo">ANILLAS DE POTA CONG.</td><td>&mdash;</td></tr><tr data-search="19065  langosta cocida cortada  congelada"><td class="codigo">19065</td><td class="codigo">&mdash;</td><td class="articulo">LANGOSTA COCIDA CORTADA  CONGELADA</td><td>&mdash;</td></tr><tr data-search="19099  cangrejo de río"><td class="codigo">19099</td><td class="codigo">&mdash;</td><td class="articulo">CANGREJO DE RÍO</td><td>&mdash;</td></tr><tr data-search="19123  pulpo m - congelado"><td class="codigo">19123</td><td class="codigo">&mdash;</td><td class="articulo">PULPO M - CONGELADO</td><td>&mdash;</td></tr><tr data-search="19858  tubo pota gl proteccion congelado"><td class="codigo">19858</td><td class="codigo">&mdash;</td><td class="articulo">TUBO POTA GL PROTECCION CONGELADO</td><td>&mdash;</td></tr><tr data-search="20433  cigala nº 2  (16/20) congelado"><td class="codigo">20433</td><td class="codigo">&mdash;</td><td class="articulo">CIGALA Nº 2  (16/20) CONGELADO</td><td>&mdash;</td></tr><tr data-search="25300  tiras poton cong."><td class="codigo">25300</td><td class="codigo">&mdash;</td><td class="articulo">TIRAS POTON CONG.</td><td>&mdash;</td></tr><tr data-search="1946  sucedaneo caviar negro"><td class="codigo">1946</td><td class="codigo">&mdash;</td><td class="articulo">SUCEDANEO CAVIAR NEGRO</td><td>&mdash;</td></tr><tr data-search="25537  sucedaneo caviar rojo"><td class="codigo">25537</td><td class="codigo">&mdash;</td><td class="articulo">SUCEDANEO CAVIAR ROJO</td><td>&mdash;</td></tr><tr data-search="28341  palito cangrejo loncheado"><td class="codigo">28341</td><td class="codigo">&mdash;</td><td class="articulo">PALITO CANGREJO LONCHEADO</td><td>&mdash;</td></tr><tr data-search="1454  arenques marinados"><td class="codigo">1454</td><td class="codigo">&mdash;</td><td class="articulo">ARENQUES MARINADOS</td><td>&mdash;</td></tr><tr data-search="1455  arenques mostaza"><td class="codigo">1455</td><td class="codigo">&mdash;</td><td class="articulo">ARENQUES MOSTAZA</td><td>&mdash;</td></tr><tr data-search="1456  arenques tomate"><td class="codigo">1456</td><td class="codigo">&mdash;</td><td class="articulo">ARENQUES TOMATE</td><td>&mdash;</td></tr><tr data-search="1950  atun ahumado"><td class="codigo">1950</td><td class="codigo">&mdash;</td><td class="articulo">ATUN AHUMADO</td><td>&mdash;</td></tr><tr data-search="3230  arenque al curry"><td class="codigo">3230</td><td class="codigo">&mdash;</td><td class="articulo">ARENQUE AL CURRY</td><td>&mdash;</td></tr><tr data-search="8537  bacalao ahumado"><td class="codigo">8537</td><td class="codigo">&mdash;</td><td class="articulo">BACALAO AHUMADO</td><td>&mdash;</td></tr><tr data-search="17044  recortes salmon ahumado"><td class="codigo">17044</td><td class="codigo">&mdash;</td><td class="articulo">RECORTES SALMON AHUMADO</td><td>&mdash;</td></tr><tr data-search="24419  caballa ahumada"><td class="codigo">24419</td><td class="codigo">&mdash;</td><td class="articulo">CABALLA AHUMADA</td><td>&mdash;</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty" hidden>Sin resultados</div>
+      </div>
+    </section>
+    <section class="familia open" data-familia="03. carnes">
+      <button class="familia-header" type="button" aria-expanded="true">
+        <div class="familia-left">
+          <div class="familia-title">03. CARNES</div>
+          <div class="familia-sub"><span class="total-count">136</span> artículos</div>
+        </div>
+        <div class="familia-right">
+          <div class="count"><span class="visible-count">136</span> resultados</div>
+          <div class="arrow">›</div>
+        </div>
+      </button>
+      <div class="familia-body">
+        <div class="tabla-wrap">
+          <table>
+            <thead><tr><th>DALI</th><th>SAP</th><th>Artículo</th><th>Unidad</th></tr></thead>
+            <tbody>
+              <tr data-search="596 10100195 chuleta cordero congelada"><td class="codigo">596</td><td class="codigo">10100195</td><td class="articulo">CHULETA CORDERO CONGELADA</td><td>KILOGRAMO</td></tr><tr data-search="1684 10101863 pata cordero s/hueso cong."><td class="codigo">1684</td><td class="codigo">10101863</td><td class="articulo">PATA CORDERO S/HUESO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1689 10101865 cabra troceada cong."><td class="codigo">1689</td><td class="codigo">10101865</td><td class="articulo">CABRA TROCEADA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="11148 10102193 pata / pierna cordero recental entera cong."><td class="codigo">11148</td><td class="codigo">10102193</td><td class="articulo">PATA / PIERNA CORDERO RECENTAL ENTERA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="16946 10101831 pata cordero lechal cong."><td class="codigo">16946</td><td class="codigo">10101831</td><td class="articulo">PATA CORDERO LECHAL CONG.</td><td>KILOGRAMO</td></tr><tr data-search="19170 10101658 cordero troceado/taco s/h  cong."><td class="codigo">19170</td><td class="codigo">10101658</td><td class="articulo">CORDERO TROCEADO/TACO S/H  CONG.</td><td>KILOGRAMO</td></tr><tr data-search="20627 10101502 carre cordero recental corte frances cong."><td class="codigo">20627</td><td class="codigo">10101502</td><td class="articulo">CARRE CORDERO RECENTAL CORTE FRANCES CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1698 10101833 bondiola s/h seca extra porcino cong."><td class="codigo">1698</td><td class="codigo">10101833</td><td class="articulo">BONDIOLA S/H SECA EXTRA PORCINO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1699 10101836 chuleta aguja seca extra porcino cong."><td class="codigo">1699</td><td class="codigo">10101836</td><td class="articulo">CHULETA AGUJA SECA EXTRA PORCINO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1700  chuleta cerdo centro seca extra cong."><td class="codigo">1700</td><td class="codigo">&mdash;</td><td class="articulo">CHULETA CERDO CENTRO SECA EXTRA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1704 10101838 cinta lomo cerdo seca extra cong."><td class="codigo">1704</td><td class="codigo">10101838</td><td class="articulo">CINTA LOMO CERDO SECA EXTRA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1706 10101842 costillas de cerdo carnuda cong."><td class="codigo">1706</td><td class="codigo">10101842</td><td class="articulo">COSTILLAS DE CERDO CARNUDA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1709 10101843 lechones  6/8kg cong."><td class="codigo">1709</td><td class="codigo">10101843</td><td class="articulo">LECHONES  6/8KG CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1711 10101844 pata cerdo c/hueso y piel cong."><td class="codigo">1711</td><td class="codigo">10101844</td><td class="articulo">PATA CERDO C/HUESO Y PIEL CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1714 10101846 solomillo cerdo seco extra cong."><td class="codigo">1714</td><td class="codigo">10101846</td><td class="articulo">SOLOMILLO CERDO SECO EXTRA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1717 10101847 carrillada de cerdo cong."><td class="codigo">1717</td><td class="codigo">10101847</td><td class="articulo">CARRILLADA DE CERDO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1810 10101767 filete de cinta adobada cong."><td class="codigo">1810</td><td class="codigo">10101767</td><td class="articulo">FILETE DE CINTA ADOBADA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="3501 10100361 cerdo magro tacos-estofado cong."><td class="codigo">3501</td><td class="codigo">10100361</td><td class="articulo">CERDO MAGRO TACOS-ESTOFADO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="3503 10100362 cinta lomo cerdo seca fileteada cong."><td class="codigo">3503</td><td class="codigo">10100362</td><td class="articulo">CINTA LOMO CERDO SECA FILETEADA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="4091 10100306 costillas salada porcino cong."><td class="codigo">4091</td><td class="codigo">10100306</td><td class="articulo">COSTILLAS SALADA PORCINO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="7594 10100142 brocheta - pincho moruno porcino cong."><td class="codigo">7594</td><td class="codigo">10100142</td><td class="articulo">BROCHETA - PINCHO MORUNO PORCINO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="8257 10103240 pluma de cerdo iberico cong. (eventos)"><td class="codigo">8257</td><td class="codigo">10103240</td><td class="articulo">PLUMA DE CERDO IBERICO CONG. (EVENTOS)</td><td>KILOGRAMO</td></tr><tr data-search="15790  filete aguja cerdo congelado"><td class="codigo">15790</td><td class="codigo">&mdash;</td><td class="articulo">FILETE AGUJA CERDO CONGELADO</td><td>KILOGRAMO</td></tr><tr data-search="17599  secreto cerdo iberico cong"><td class="codigo">17599</td><td class="codigo">&mdash;</td><td class="articulo">SECRETO CERDO IBERICO CONG</td><td>KILOGRAMO</td></tr><tr data-search="20621 10101499 chuletero cerdo iberico cong."><td class="codigo">20621</td><td class="codigo">10101499</td><td class="articulo">CHULETERO CERDO IBERICO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="20623 10101501 cinta lomo cerdo iberico congelado"><td class="codigo">20623</td><td class="codigo">10101501</td><td class="articulo">CINTA LOMO CERDO IBERICO CONGELADO</td><td>KILOGRAMO</td></tr><tr data-search="21139 10101493 jamon entero deshuesado - gammon"><td class="codigo">21139</td><td class="codigo">10101493</td><td class="articulo">JAMON ENTERO DESHUESADO - GAMMON</td><td>KILOGRAMO</td></tr><tr data-search="21507 10101415 secreto blanco"><td class="codigo">21507</td><td class="codigo">10101415</td><td class="articulo">SECRETO BLANCO</td><td>KILOGRAMO</td></tr><tr data-search="21554 10101420 cerdo en tiras"><td class="codigo">21554</td><td class="codigo">10101420</td><td class="articulo">CERDO EN TIRAS</td><td>KILOGRAMO</td></tr><tr data-search="25508 10101088 panceta porcino cortada cong."><td class="codigo">25508</td><td class="codigo">10101088</td><td class="articulo">PANCETA PORCINO CORTADA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="26622 10100952 codillo cerdo congelado"><td class="codigo">26622</td><td class="codigo">10100952</td><td class="articulo">CODILLO CERDO CONGELADO</td><td>KILOGRAMO</td></tr><tr data-search="1845 10101741 panceta cerdo bacon con piel -  refrigerada"><td class="codigo">1845</td><td class="codigo">10101741</td><td class="articulo">PANCETA CERDO BACON CON PIEL -  REFRIGERADA</td><td>KILOGRAMO</td></tr><tr data-search="15951  cinta lomo ahumada refrigerada - sajonia"><td class="codigo">15951</td><td class="codigo">&mdash;</td><td class="articulo">CINTA LOMO AHUMADA REFRIGERADA - SAJONIA</td><td>KILOGRAMO</td></tr><tr data-search="24517 10101187 cinta lomo con piel fresca"><td class="codigo">24517</td><td class="codigo">10101187</td><td class="articulo">CINTA LOMO CON PIEL FRESCA</td><td>KILOGRAMO</td></tr><tr data-search="1729 10101801 carrillada de ternera cong."><td class="codigo">1729</td><td class="codigo">10101801</td><td class="articulo">CARRILLADA DE TERNERA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1734 10101804 entraña vacuno-falda cong."><td class="codigo">1734</td><td class="codigo">10101804</td><td class="articulo">ENTRAÑA VACUNO-FALDA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1735 10101805 garron entero vacuno cong."><td class="codigo">1735</td><td class="codigo">10101805</td><td class="articulo">GARRON ENTERO VACUNO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1736 10101806 higado de ternera cong."><td class="codigo">1736</td><td class="codigo">10101806</td><td class="articulo">HIGADO DE TERNERA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1737 10101807 huesos ternera cong."><td class="codigo">1737</td><td class="codigo">10101807</td><td class="articulo">HUESOS TERNERA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1744 10101811 peceto vacuno cong. brasil"><td class="codigo">1744</td><td class="codigo">10101811</td><td class="articulo">PECETO VACUNO CONG. BRASIL</td><td>KILOGRAMO</td></tr><tr data-search="1747 10101813 solomillo 3/4  vacuno cong. brasil"><td class="codigo">1747</td><td class="codigo">10101813</td><td class="articulo">SOLOMILLO 3/4  VACUNO CONG. BRASIL</td><td>KILOGRAMO</td></tr><tr data-search="1753 10101818 centro cuadril vacuno brasil  cong."><td class="codigo">1753</td><td class="codigo">10101818</td><td class="articulo">CENTRO CUADRIL VACUNO BRASIL  CONG.</td><td>KILOGRAMO</td></tr><tr data-search="3496 10100360 vacuno carne tacos  cong."><td class="codigo">3496</td><td class="codigo">10100360</td><td class="articulo">VACUNO CARNE TACOS  CONG.</td><td>KILOGRAMO</td></tr><tr data-search="8273 10100126 contra ternera rosada cong."><td class="codigo">8273</td><td class="codigo">10100126</td><td class="articulo">CONTRA TERNERA ROSADA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="10617 10102224 carne molida vacuno cong."><td class="codigo">10617</td><td class="codigo">10102224</td><td class="articulo">CARNE MOLIDA VACUNO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="18574 10101698 entrecot vacuno congelado uruguay"><td class="codigo">18574</td><td class="codigo">10101698</td><td class="articulo">ENTRECOT VACUNO CONGELADO URUGUAY</td><td>KILOGRAMO</td></tr><tr data-search="20614 10101559 chuletero ternera gallega cong."><td class="codigo">20614</td><td class="codigo">10101559</td><td class="articulo">CHULETERO TERNERA GALLEGA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="20617 10101560 lomo vaca extra s/h maduracion 30 dias cong."><td class="codigo">20617</td><td class="codigo">10101560</td><td class="articulo">LOMO VACA EXTRA S/H MADURACION 30 DIAS CONG.</td><td>KILOGRAMO</td></tr><tr data-search="20820 10101528 entrecot vacuno congelado brasil"><td class="codigo">20820</td><td class="codigo">10101528</td><td class="articulo">ENTRECOT VACUNO CONGELADO BRASIL</td><td>KILOGRAMO</td></tr><tr data-search="21495 10101413 vacuno tiras"><td class="codigo">21495</td><td class="codigo">10101413</td><td class="articulo">VACUNO TIRAS</td><td>KILOGRAMO</td></tr><tr data-search="21889 10101402 costillar entero vacuno cong."><td class="codigo">21889</td><td class="codigo">10101402</td><td class="articulo">COSTILLAR ENTERO VACUNO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="23418 10101295 solomillo 3/4 uruguayo congelado"><td class="codigo">23418</td><td class="codigo">10101295</td><td class="articulo">SOLOMILLO 3/4 URUGUAYO CONGELADO</td><td>KILOGRAMO</td></tr><tr data-search="25098 10101137 carne molida mixta cerdo-vacuno cong."><td class="codigo">25098</td><td class="codigo">10101137</td><td class="articulo">CARNE MOLIDA MIXTA CERDO-VACUNO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="25982 10101030 entrecot - bife angosto porcinado grueso 2cm cong."><td class="codigo">25982</td><td class="codigo">10101030</td><td class="articulo">ENTRECOT - BIFE ANGOSTO PORCINADO GRUESO 2CM CONG.</td><td>KILOGRAMO</td></tr><tr data-search="25990 10101031 ossobuco de ternera cortado cong."><td class="codigo">25990</td><td class="codigo">10101031</td><td class="articulo">OSSOBUCO DE TERNERA CORTADO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="26613 10100950 costilla añojo c/cortes cong"><td class="codigo">26613</td><td class="codigo">10100950</td><td class="articulo">COSTILLA AÑOJO C/CORTES CONG</td><td>KILOGRAMO</td></tr><tr data-search="27837 10103241 jarrete ternera blanca cong."><td class="codigo">27837</td><td class="codigo">10103241</td><td class="articulo">JARRETE TERNERA BLANCA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="28885 10100683 entrecot - bife angosto porcinado fino 1cm cong."><td class="codigo">28885</td><td class="codigo">10100683</td><td class="articulo">ENTRECOT - BIFE ANGOSTO PORCINADO FINO 1CM CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1757 10101820 centro de cuadril vacuno refrig. brasil"><td class="codigo">1757</td><td class="codigo">10101820</td><td class="articulo">CENTRO DE CUADRIL VACUNO REFRIG. BRASIL</td><td>KILOGRAMO</td></tr><tr data-search="1758 10101822 chuleta de ternera refrig."><td class="codigo">1758</td><td class="codigo">10101822</td><td class="articulo">CHULETA DE TERNERA REFRIG.</td><td>KILOGRAMO</td></tr><tr data-search="1759 10101823 entrecot vacuno refrig. brasil"><td class="codigo">1759</td><td class="codigo">10101823</td><td class="articulo">ENTRECOT VACUNO REFRIG. BRASIL</td><td>KILOGRAMO</td></tr><tr data-search="8434 10100103 entrecot vacuno refrig. uruguay"><td class="codigo">8434</td><td class="codigo">10100103</td><td class="articulo">ENTRECOT VACUNO REFRIG. URUGUAY</td><td>KILOGRAMO</td></tr><tr data-search="23420 10101296 solomillo 3/4 uruguayo refrigerado"><td class="codigo">23420</td><td class="codigo">10101296</td><td class="articulo">SOLOMILLO 3/4 URUGUAYO REFRIGERADO</td><td>KILOGRAMO</td></tr><tr data-search="1762 10101824 magret de pato cong."><td class="codigo">1762</td><td class="codigo">10101824</td><td class="articulo">MAGRET DE PATO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1763 10101827 alitas de pollo cong."><td class="codigo">1763</td><td class="codigo">10101827</td><td class="articulo">ALITAS DE POLLO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1764 10101828 muslo pollo s/h s/p cong. granel"><td class="codigo">1764</td><td class="codigo">10101828</td><td class="articulo">MUSLO POLLO S/H S/P CONG. GRANEL</td><td>KILOGRAMO</td></tr><tr data-search="1770 10101783 jamoncitos de muslos cong."><td class="codigo">1770</td><td class="codigo">10101783</td><td class="articulo">JAMONCITOS DE MUSLOS CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1773 10101785 muslo de pollo con cadera cong."><td class="codigo">1773</td><td class="codigo">10101785</td><td class="articulo">MUSLO DE POLLO CON CADERA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1774 10101786 muslo de pollo sin cadera cong."><td class="codigo">1774</td><td class="codigo">10101786</td><td class="articulo">MUSLO DE POLLO SIN CADERA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1775 10101788 patos enteros cong."><td class="codigo">1775</td><td class="codigo">10101788</td><td class="articulo">PATOS ENTEROS CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1776 10101789 pavos enteros cong."><td class="codigo">1776</td><td class="codigo">10101789</td><td class="articulo">PAVOS ENTEROS CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1777 10101790 pechuga de pavo cong."><td class="codigo">1777</td><td class="codigo">10101790</td><td class="articulo">PECHUGA DE PAVO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1778 10101791 pechuga de pavo fileteada cong."><td class="codigo">1778</td><td class="codigo">10101791</td><td class="articulo">PECHUGA DE PAVO FILETEADA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1779 10101792 pechuga de pollo cong."><td class="codigo">1779</td><td class="codigo">10101792</td><td class="articulo">PECHUGA DE POLLO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1780 10101793 pechuga de pollo fileteada cong."><td class="codigo">1780</td><td class="codigo">10101793</td><td class="articulo">PECHUGA DE POLLO FILETEADA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1783 10101794 redondo de pavo cong."><td class="codigo">1783</td><td class="codigo">10101794</td><td class="articulo">REDONDO DE PAVO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1784 10101795 conejo entero cong."><td class="codigo">1784</td><td class="codigo">10101795</td><td class="articulo">CONEJO ENTERO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="2133 10101440 brocheta de pollo cong."><td class="codigo">2133</td><td class="codigo">10101440</td><td class="articulo">BROCHETA DE POLLO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="4494 10100275 pollo entero 1,2 kg. cong."><td class="codigo">4494</td><td class="codigo">10100275</td><td class="articulo">POLLO ENTERO 1,2 KG. CONG.</td><td>KILOGRAMO</td></tr><tr data-search="6753 10100164 solomillo de pollo cong."><td class="codigo">6753</td><td class="codigo">10100164</td><td class="articulo">SOLOMILLO DE POLLO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="12965 10102161 ficelles mousse higado de pato 400 gr"><td class="codigo">12965</td><td class="codigo">10102161</td><td class="articulo">FICELLES MOUSSE HIGADO DE PATO 400 GR</td><td>UNIDAD</td></tr><tr data-search="14126 10102092 alitas pollo cruda salsa barbacoa"><td class="codigo">14126</td><td class="codigo">10102092</td><td class="articulo">ALITAS POLLO CRUDA SALSA BARBACOA</td><td>KILOGRAMO</td></tr><tr data-search="14127 10102093 chuletitas de pavo cong."><td class="codigo">14127</td><td class="codigo">10102093</td><td class="articulo">CHULETITAS DE PAVO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="16241 10101912 jamoncitos alas granel"><td class="codigo">16241</td><td class="codigo">10101912</td><td class="articulo">JAMONCITOS ALAS GRANEL</td><td>KILOGRAMO</td></tr><tr data-search="18275 10101728 tiras pollo congelada"><td class="codigo">18275</td><td class="codigo">10101728</td><td class="articulo">TIRAS POLLO CONGELADA</td><td>KILOGRAMO</td></tr><tr data-search="20622 10101500 pechuga pollo corral congelado"><td class="codigo">20622</td><td class="codigo">10101500</td><td class="articulo">PECHUGA POLLO CORRAL CONGELADO</td><td>KILOGRAMO</td></tr><tr data-search="20758 10101520 jamoncitos alas barbacoa"><td class="codigo">20758</td><td class="codigo">10101520</td><td class="articulo">JAMONCITOS ALAS BARBACOA</td><td>KILOGRAMO</td></tr><tr data-search="21473  tiras de pavo"><td class="codigo">21473</td><td class="codigo">&mdash;</td><td class="articulo">TIRAS DE PAVO</td><td>KILOGRAMO</td></tr><tr data-search="2144 10101447 filete pechuga de pollo empanada refrigerada"><td class="codigo">2144</td><td class="codigo">10101447</td><td class="articulo">FILETE PECHUGA DE POLLO EMPANADA REFRIGERADA</td><td>KILOGRAMO</td></tr><tr data-search="3252  fingers de pollo refrigerado"><td class="codigo">3252</td><td class="codigo">&mdash;</td><td class="articulo">FINGERS DE POLLO REFRIGERADO</td><td>KILOGRAMO</td></tr><tr data-search="5354 10100232 mini cordon bleu de pollo refrigerado"><td class="codigo">5354</td><td class="codigo">10100232</td><td class="articulo">MINI CORDON BLEU DE POLLO REFRIGERADO</td><td>KILOGRAMO</td></tr><tr data-search="5369 10100203 filete pechuga pollo al ras el hanout refrigerado"><td class="codigo">5369</td><td class="codigo">10100203</td><td class="articulo">FILETE PECHUGA POLLO AL RAS EL HANOUT REFRIGERADO</td><td>KILOGRAMO</td></tr><tr data-search="10277 10102234 pechuga de pollo refrigerada"><td class="codigo">10277</td><td class="codigo">10102234</td><td class="articulo">PECHUGA DE POLLO REFRIGERADA</td><td>KILOGRAMO</td></tr><tr data-search="14452  pincho de pollo al mojo canario refrigerado"><td class="codigo">14452</td><td class="codigo">&mdash;</td><td class="articulo">PINCHO DE POLLO AL MOJO CANARIO REFRIGERADO</td><td>KILOGRAMO</td></tr><tr data-search="17570 10101821 pechuga pollo fileteada refrigerada"><td class="codigo">17570</td><td class="codigo">10101821</td><td class="articulo">PECHUGA POLLO FILETEADA REFRIGERADA</td><td>KILOGRAMO</td></tr><tr data-search="18216 10101778 strogonoff pollo tiras ( refrigerado)"><td class="codigo">18216</td><td class="codigo">10101778</td><td class="articulo">STROGONOFF POLLO TIRAS ( REFRIGERADO)</td><td>KILOGRAMO</td></tr><tr data-search="20904 10101467 pinchito pollo adobado refrigerado"><td class="codigo">20904</td><td class="codigo">10101467</td><td class="articulo">PINCHITO POLLO ADOBADO REFRIGERADO</td><td>KILOGRAMO</td></tr><tr data-search="26161 10101022 mini brocheta pollo refrigerada"><td class="codigo">26161</td><td class="codigo">10101022</td><td class="articulo">MINI BROCHETA POLLO REFRIGERADA</td><td>KILOGRAMO</td></tr><tr data-search="26623 10100953 mini brocheta pollo barbacoa refrigerada"><td class="codigo">26623</td><td class="codigo">10100953</td><td class="articulo">MINI BROCHETA POLLO BARBACOA REFRIGERADA</td><td>KILOGRAMO</td></tr><tr data-search="28342 10100739 mini brocheta pollo ras el hanout refrigerada"><td class="codigo">28342</td><td class="codigo">10100739</td><td class="articulo">MINI BROCHETA POLLO RAS EL HANOUT REFRIGERADA</td><td>KILOGRAMO</td></tr><tr data-search="408 10100305 morcilla asturiana"><td class="codigo">408</td><td class="codigo">10100305</td><td class="articulo">MORCILLA ASTURIANA</td><td>KILOGRAMO</td></tr><tr data-search="579 10100194 cinta lomo de cerdo adobada cong."><td class="codigo">579</td><td class="codigo">10100194</td><td class="articulo">CINTA LOMO DE CERDO ADOBADA CONG.</td><td>KILOGRAMO</td></tr><tr data-search="1800 10101799 kebab ternera"><td class="codigo">1800</td><td class="codigo">10101799</td><td class="articulo">KEBAB TERNERA</td><td>KILOGRAMO</td></tr><tr data-search="1801 10101753 kebab pollo"><td class="codigo">1801</td><td class="codigo">10101753</td><td class="articulo">KEBAB POLLO</td><td>KILOGRAMO</td></tr><tr data-search="1802 10101754 chorizo parrillero 100 gr argentino"><td class="codigo">1802</td><td class="codigo">10101754</td><td class="articulo">CHORIZO PARRILLERO 100 GR ARGENTINO</td><td>KILOGRAMO</td></tr><tr data-search="1808 10101761 salchichas cocktail roja 25g. frankfurt"><td class="codigo">1808</td><td class="codigo">10101761</td><td class="articulo">SALCHICHAS COCKTAIL ROJA 25G. FRANKFURT</td><td>KILOGRAMO</td></tr><tr data-search="1809 10101763 morcilla de arroz"><td class="codigo">1809</td><td class="codigo">10101763</td><td class="articulo">MORCILLA DE ARROZ</td><td>KILOGRAMO</td></tr><tr data-search="1814 10101771 chistorras"><td class="codigo">1814</td><td class="codigo">10101771</td><td class="articulo">CHISTORRAS</td><td>KILOGRAMO</td></tr><tr data-search="3250 10100388 hamburguesa mixta 80 gr cong."><td class="codigo">3250</td><td class="codigo">10100388</td><td class="articulo">HAMBURGUESA MIXTA 80 GR CONG.</td><td>KILOGRAMO</td></tr><tr data-search="3311 10100398 salchicha chipolata roja"><td class="codigo">3311</td><td class="codigo">10100398</td><td class="articulo">SALCHICHA CHIPOLATA ROJA</td><td>KILOGRAMO</td></tr><tr data-search="3319 10100402 salchicha hot dog ahumada 75 gr"><td class="codigo">3319</td><td class="codigo">10100402</td><td class="articulo">SALCHICHA HOT DOG AHUMADA 75 GR</td><td>KILOGRAMO</td></tr><tr data-search="3899 10100323 salchicha bratwurst 100 gr."><td class="codigo">3899</td><td class="codigo">10100323</td><td class="articulo">SALCHICHA BRATWURST 100 GR.</td><td>KILOGRAMO</td></tr><tr data-search="3904 10100324 chorizo asturiano"><td class="codigo">3904</td><td class="codigo">10100324</td><td class="articulo">CHORIZO ASTURIANO</td><td>KILOGRAMO</td></tr><tr data-search="8205 10100124 salchicha chipolata 40 gr  blanca"><td class="codigo">8205</td><td class="codigo">10100124</td><td class="articulo">SALCHICHA CHIPOLATA 40 GR  BLANCA</td><td>KILOGRAMO</td></tr><tr data-search="11149 10102194 albondigas pollo"><td class="codigo">11149</td><td class="codigo">10102194</td><td class="articulo">ALBONDIGAS POLLO</td><td>KILOGRAMO</td></tr><tr data-search="11321 10102201 albondigas mixta vacuno/cerdo"><td class="codigo">11321</td><td class="codigo">10102201</td><td class="articulo">ALBONDIGAS MIXTA VACUNO/CERDO</td><td>KILOGRAMO</td></tr><tr data-search="11723 10102191 chorizo criollo"><td class="codigo">11723</td><td class="codigo">10102191</td><td class="articulo">CHORIZO CRIOLLO</td><td>KILOGRAMO</td></tr><tr data-search="11725 10102192 morcilla cebolla pincho cong."><td class="codigo">11725</td><td class="codigo">10102192</td><td class="articulo">MORCILLA CEBOLLA PINCHO CONG.</td><td>KILOGRAMO</td></tr><tr data-search="14341 10102070 hamburguesa pollo 80 gr cong."><td class="codigo">14341</td><td class="codigo">10102070</td><td class="articulo">HAMBURGUESA POLLO 80 GR CONG.</td><td>KILOGRAMO</td></tr><tr data-search="14469 10102027 hamburguesa 100% vacuno 80 gr. cong."><td class="codigo">14469</td><td class="codigo">10102027</td><td class="articulo">HAMBURGUESA 100% VACUNO 80 GR. CONG.</td><td>KILOGRAMO</td></tr><tr data-search="18800 10101717 chorizo parrillero 100gr bbq"><td class="codigo">18800</td><td class="codigo">10101717</td><td class="articulo">CHORIZO PARRILLERO 100GR BBQ</td><td>KILOGRAMO</td></tr><tr data-search="18808 10101718 salchicha parrillero pollo"><td class="codigo">18808</td><td class="codigo">10101718</td><td class="articulo">SALCHICHA PARRILLERO POLLO</td><td>KILOGRAMO</td></tr><tr data-search="19074 10101689 chorizo parrillero 50 gr bbq"><td class="codigo">19074</td><td class="codigo">10101689</td><td class="articulo">CHORIZO PARRILLERO 50 GR BBQ</td><td>KILOGRAMO</td></tr><tr data-search="19102 10101692 chorizo parrillero pollo 100grs"><td class="codigo">19102</td><td class="codigo">10101692</td><td class="articulo">CHORIZO PARRILLERO POLLO 100GRS</td><td>KILOGRAMO</td></tr><tr data-search="20438 10101536 hamburguesa 100% vacuno 150 gr."><td class="codigo">20438</td><td class="codigo">10101536</td><td class="articulo">HAMBURGUESA 100% VACUNO 150 GR.</td><td>KILOGRAMO</td></tr><tr data-search="20895 10101463 hamburguesa americana 113gms."><td class="codigo">20895</td><td class="codigo">10101463</td><td class="articulo">HAMBURGUESA AMERICANA 113GMS.</td><td>KILOGRAMO</td></tr><tr data-search="27627 10100830 salchicha hot dog americana"><td class="codigo">27627</td><td class="codigo">10100830</td><td class="articulo">SALCHICHA HOT DOG AMERICANA</td><td>KILOGRAMO</td></tr><tr data-search="27757 10100791 morcilla negra entera - black puding"><td class="codigo">27757</td><td class="codigo">10100791</td><td class="articulo">MORCILLA NEGRA ENTERA - BLACK PUDING</td><td>KILOGRAMO</td></tr><tr data-search="28025 10100775 carne guisante vegano pure"><td class="codigo">28025</td><td class="codigo">10100775</td><td class="articulo">CARNE GUISANTE VEGANO PURE</td><td>KILOGRAMO</td></tr><tr data-search="28592 10100710 salchicha inglesa 50% premium"><td class="codigo">28592</td><td class="codigo">10100710</td><td class="articulo">SALCHICHA INGLESA 50% PREMIUM</td><td>KILOGRAMO</td></tr><tr data-search="1848 10101743 pechuga de pollo ahumada"><td class="codigo">1848</td><td class="codigo">10101743</td><td class="articulo">PECHUGA DE POLLO AHUMADA</td><td>KILOGRAMO</td></tr><tr data-search="3611 10100370 pechuga de pavo ahumada"><td class="codigo">3611</td><td class="codigo">10100370</td><td class="articulo">PECHUGA DE PAVO AHUMADA</td><td>KILOGRAMO</td></tr><tr data-search="4497 10100276 cinta lomo cerdo ahumado"><td class="codigo">4497</td><td class="codigo">10100276</td><td class="articulo">CINTA LOMO CERDO AHUMADO</td><td>KILOGRAMO</td></tr><tr data-search="20273 10101578 ternera ahumada"><td class="codigo">20273</td><td class="codigo">10101578</td><td class="articulo">TERNERA AHUMADA</td><td>KILOGRAMO</td></tr><tr data-search="1852 10101749 paleta iberica deshuesada"><td class="codigo">1852</td><td class="codigo">10101749</td><td class="articulo">PALETA IBERICA DESHUESADA</td><td>KILOGRAMO</td></tr><tr data-search="9065 10103204 jamon iberico de bellota rsva (sobre)"><td class="codigo">9065</td><td class="codigo">10103204</td><td class="articulo">JAMON IBERICO DE BELLOTA RSVA (SOBRE)</td><td>KILOGRAMO</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty" hidden>Sin resultados</div>
+      </div>
+    </section>
+    </div>
+  </div>
+</div>
 
-var familiasOrden = [
-  '01. FRUTAS Y VERDURAS FRESCAS',
-  '02. PESCADOS',
-  '03. CARNES'
-];
+<script>
+(function(){
+  var input=document.getElementById('buscadorGeneral');
+  var clearBtn=document.getElementById('btnLimpiar');
+  var helper=document.getElementById('helper');
+  var familias=[].slice.call(document.querySelectorAll('.familia'));
 
-var container  = document.getElementById('familiasContainer');
-var buscador   = document.getElementById('buscadorGeneral');
-var btnLimpiar = document.getElementById('btnLimpiar');
-var helperEl   = document.querySelector('.helper');
+  function norm(v){
+    return String(v||'').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .trim();
+  }
 
-function norm(v) {
-  return String(v||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
-}
+  function update(){
+    var q=norm(input.value);
+    var totalVisible=0;
 
-function render() {
-  var q = norm(buscador.value);
-  container.innerHTML = '';
-  familiasOrden.forEach(function(fam) {
-    var todos = asignaciones.filter(function(i){ return i.familia === fam; });
-    var lista = q ? todos.filter(function(i){
-      return norm(i.dali).indexOf(q)>=0 || norm(i.sap||'').indexOf(q)>=0 || norm(i.articulo).indexOf(q)>=0;
-    }) : todos;
-    var card = document.createElement('section');
-    card.className = 'familia';
-    var filas = lista.map(function(i){
-      return '<tr><td class="codigo">'+i.dali+'</td><td class="codigo">'+(i.sap||'&mdash;')+'</td><td class="articulo">'+i.articulo+'</td></tr>';
-    }).join('');
-    var tbody = lista.length
-      ? '<div class="tabla-wrap"><table><thead><tr><th>DALI</th><th>SAP</th><th>Artículo</th></tr></thead><tbody>'+filas+'</tbody></table></div>'
-      : '<div class="empty">Sin resultados</div>';
-    card.innerHTML =
-      '<button class="familia-header" type="button">'
-      +'<div class="familia-left"><div class="familia-title">'+fam+'</div>'
-      +'<div class="familia-sub">'+todos.length+' artículos</div></div>'
-      +'<div class="familia-right"><div class="count">'+lista.length+' resultados</div>'
-      +'<div class="arrow">›</div></div></button>'
-      +'<div class="familia-body">'+tbody+'</div>';
-    card.querySelector('.familia-header').onclick = function(){ card.classList.toggle('open'); };
-    if (q && lista.length) card.classList.add('open');
-    container.appendChild(card);
+    familias.forEach(function(familia){
+      var rows=[].slice.call(familia.querySelectorAll('tbody tr'));
+      var visible=0;
+
+      rows.forEach(function(row){
+        var txt=norm(row.getAttribute('data-search'));
+        var show=!q || txt.indexOf(q)!==-1;
+        row.hidden=!show;
+        if(show) visible++;
+      });
+
+      familia.querySelector('.visible-count').textContent=visible;
+      familia.querySelector('.empty').hidden=visible!==0;
+      familia.style.display = visible===0 && q ? 'none' : '';
+
+      if(q && visible>0) {
+        familia.classList.add('open');
+      }
+
+      totalVisible += visible;
+    });
+
+    helper.innerHTML = q
+      ? '<span style="color:var(--ok)">●</span> ' + totalVisible + ' resultados encontrados'
+      : '<span style="color:var(--ok)">●</span> 374 artículos cargados';
+  }
+
+  familias.forEach(function(familia){
+    var btn=familia.querySelector('.familia-header');
+    btn.addEventListener('click', function(){
+      familia.classList.toggle('open');
+      btn.setAttribute('aria-expanded', familia.classList.contains('open') ? 'true' : 'false');
+    });
   });
-}
 
-function setHelper(txt) {
-  if (helperEl) helperEl.innerHTML = txt;
-}
-
-// 1. Mostrar datos embebidos inmediatamente
-render();
-setHelper('<span style="color:var(--ok)">&#9679;</span> '+asignaciones.length+' artículos cargados');
-
-// 2. Intentar actualizar desde GitHub en segundo plano
-fetch(GITHUB_URL + '?t=' + Date.now())
-  .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
-  .then(function(d){
-    asignaciones = d;
-    render();
-    setHelper('<span style="color:var(--ok)">&#9679;</span> '+d.length+' artículos · Actualizado desde GitHub');
-  })
-  .catch(function(){ /* mantiene datos embebidos */ });
-
-buscador.oninput = render;
-btnLimpiar.onclick = function(){ buscador.value=''; render(); buscador.focus(); };
+  input.addEventListener('input', update);
+  clearBtn.addEventListener('click', function(){
+    input.value='';
+    update();
+    input.focus();
+  });
+})();
 </script>
 </body>
 </html>

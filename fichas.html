@@ -1358,22 +1358,30 @@
       const esAndroid = navigator.userAgent.includes('PrincessPlataforma');
       if (esAndroid) {
         const _pdfUrl = art.url_ficha_tecnica;
-        const _docsUrl = 'https://docs.google.com/gviewer?embedded=true&url=' + encodeURIComponent(_pdfUrl);
+        // FIX: llamar directamente al bridge nativo con la URL real del PDF.
+        // Antes se usaba Google Docs Viewer → la URL de Google llegaba a MainActivity
+        // como si fuera un PDF directo → PdfViewerActivity recibía una URL de Google → 404.
         body.innerHTML =
           '<div class="modal-no-pdf" style="gap:20px;">' +
             '<div class="icon">\uD83D\uDCC4</div>' +
             '<p style="margin:0;font-size:14px;color:#555;text-align:center;">Toca para ver la ficha t\u00E9cnica</p>' +
-            '<a href="' + _docsUrl + '" target="_blank"' +
-               ' style="display:inline-block;background:#b08d57;color:white;text-decoration:none;' +
-                      'border-radius:10px;padding:12px 28px;font-size:15px;font-weight:700;">' +
+            '<button onclick="if(window.AndroidPrincess){window.AndroidPrincess.openPdf(' + JSON.stringify(_pdfUrl) + ');}else{window.open(' + JSON.stringify(_pdfUrl) + ',\'_blank\');}" ' +
+              'style="background:#b08d57;color:white;border:none;border-radius:10px;' +
+                     'padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer;">' +
               '\uD83D\uDCD6 Abrir ficha t\u00E9cnica' +
-            '</a>' +
+            '</button>' +
           '</div>';
+        // En Android no mostramos botones de pantalla completa ni descarga
+        document.getElementById('btnFullscreen').style.display = 'none';
+        dlBtn.style.display = 'none';
       } else {
         body.innerHTML = `<iframe id="modalIframe" src="${escapeHtml(art.url_ficha_tecnica)}" title="Ficha técnica"></iframe>`;
       }
-      dlBtn.href = art.url_ficha_tecnica;
-      dlBtn.style.display = 'inline-flex';
+      if (!esAndroid) {
+        dlBtn.href = art.url_ficha_tecnica;
+        dlBtn.style.display = 'inline-flex';
+        document.getElementById('btnFullscreen').style.display = '';
+      }
     } else {
       body.innerHTML = `<div class="modal-no-pdf"><div class="icon">📄</div><p>No hay ficha técnica disponible para este artículo</p></div>`;
       dlBtn.removeAttribute('href');

@@ -1358,14 +1358,15 @@
       const esAndroid = navigator.userAgent.includes('PrincessPlataforma');
       if (esAndroid) {
         const _pdfUrl = art.url_ficha_tecnica;
-        // FIX: llamar directamente al bridge nativo con la URL real del PDF.
-        // Antes se usaba Google Docs Viewer → la URL de Google llegaba a MainActivity
-        // como si fuera un PDF directo → PdfViewerActivity recibía una URL de Google → 404.
+        // Guardamos la URL en variable global para evitar el bug de comillas
+        // en atributos onclick (JSON.stringify produce comillas dobles que
+        // rompen el atributo HTML si éste también usa comillas dobles).
+        window.__androidPdfUrl = _pdfUrl;
         body.innerHTML =
           '<div class="modal-no-pdf" style="gap:20px;">' +
             '<div class="icon">\uD83D\uDCC4</div>' +
             '<p style="margin:0;font-size:14px;color:#555;text-align:center;">Toca para ver la ficha t\u00E9cnica</p>' +
-            '<button onclick="if(window.AndroidPrincess){window.AndroidPrincess.openPdf(' + JSON.stringify(_pdfUrl) + ');}else{window.open(' + JSON.stringify(_pdfUrl) + ',\'_blank\');}" ' +
+            '<button onclick="__abrirPdfAndroid()" ' +
               'style="background:#b08d57;color:white;border:none;border-radius:10px;' +
                      'padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer;">' +
               '\uD83D\uDCD6 Abrir ficha t\u00E9cnica' +
@@ -1574,6 +1575,19 @@
     if (iframe.requestFullscreen) iframe.requestFullscreen();
     else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
   });
+
+  // Función global para abrir PDF en Android sin problemas de comillas en onclick.
+  // JSON.stringify produce comillas dobles que rompen atributos HTML onclick.
+  // Solución: guardamos la URL en window.__androidPdfUrl y la leemos aquí.
+  window.__abrirPdfAndroid = function() {
+    const url = window.__androidPdfUrl;
+    if (!url) return;
+    if (window.AndroidPrincess) {
+      window.AndroidPrincess.openPdf(url);
+    } else {
+      window.open(url, '_blank');
+    }
+  };
 </script>
 
 <!-- ─── PANEL ADMIN ─── -->

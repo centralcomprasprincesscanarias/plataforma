@@ -912,8 +912,15 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     doc.setFillColor(255,255,255);
     doc.rect(0,0,pageW,pageH,'F');
 
+    const logoW = 36;
+    const logoH = 16;
+    const freeLeft = margin + logoW + 10;
+    const freeRight = pageW - margin;
+    const freeCenter = freeLeft + ((freeRight - freeLeft) / 2);
+
+    // Logo a la izquierda
     try {
-      doc.addImage(logoData, 'JPEG', margin, y, 36, 16);
+      doc.addImage(logoData, 'JPEG', margin, y, logoW, logoH);
     } catch (e) {}
 
     // Fecha arriba a la derecha
@@ -922,20 +929,21 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     doc.setTextColor(0,0,0);
     doc.text(new Date().toLocaleDateString('es-ES'), pageW - margin, y + 2, { align:'right' });
 
-    // Logo a la izquierda
-    try {
-      doc.addImage(logoData, 'JPEG', margin, y, 36, 16);
-    } catch (e) {}
-
-    // Departamento centrado y más grande que el título
+    // Departamento centrado en el espacio libre, sin invadir el logo
+    const deptoTxt = 'Departamento Central de Compras · Canarias';
     doc.setFont('helvetica','bold');
-    doc.setFontSize(22);
-    doc.text('Departamento Central de Compras · Canarias', pageW / 2 + 6, y + 8, { align:'center' });
+    let deptoSize = 22;
+    doc.setFontSize(deptoSize);
+    while (doc.getTextWidth(deptoTxt) > (freeRight - freeLeft) && deptoSize > 14) {
+      deptoSize -= 1;
+      doc.setFontSize(deptoSize);
+    }
+    doc.text(deptoTxt, freeCenter, y + 8, { align:'center' });
 
     // Título debajo, más pequeño
     doc.setFont('helvetica','bold');
     doc.setFontSize(16);
-    doc.text('REGISTRO INCIDENCIAS PROVEEDOR', pageW / 2 + 6, y + 24, { align:'center' });
+    doc.text('REGISTRO INCIDENCIAS PROVEEDOR', pageW / 2, y + 24, { align:'center' });
 
     // Línea divisoria
     y += 34;

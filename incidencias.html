@@ -509,7 +509,8 @@
     <div id="galeriaFotos" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;"></div>
   </div>
 
-  <button class="btn-enviar" id="btnEnviar" onclick="enviarIncidencia()">Enviar incidencia</button>
+
+  <button class="btn-enviar" id="btnGuardar" onclick="guardarYRegistrar()">💾 Guardar en registro</button>
   <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
     <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="generarPdfIncidencia()">Generar PDF</button>
     <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="abrirCorreoIncidencia()">Enviar correo electrónico</button>
@@ -546,8 +547,9 @@
     <input type="text" id="filtBusca" placeholder="Buscar proveedor / referencia..." oninput="filtrarTabla()">
   </div>
 
-  <div style="display:flex;justify-content:flex-end;margin:-4px 0 14px 0;">
-    <button type="button" class="btn-enviar" style="width:auto;padding:10px 18px;margin-top:0;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="descargarRegistroExcel()">Descargar Excel</button>
+  <div style="display:flex;justify-content:flex-end;gap:10px;margin:-4px 0 14px 0;flex-wrap:wrap">
+    <button type="button" class="btn-enviar" style="width:auto;padding:10px 18px;margin-top:0;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="descargarRegistroExcel()">⬇ Descargar Excel</button>
+    <button type="button" class="btn-enviar" style="width:auto;padding:10px 18px;margin-top:0;background:transparent;border:1px solid rgba(224,82,82,0.3);color:var(--red)" onclick="borrarTodoRegistro()">🗑 Borrar todo</button>
   </div>
 
   <div class="tabla-wrap">
@@ -588,6 +590,59 @@
 
 <script>
   const SUPA_URL = 'https://ifiwuloipapsezmssyda.supabase.co';
+
+  // ── REGISTRO LOCAL (localStorage) ─────────────────────────────
+  const LS_KEY = 'princess_incidencias';
+
+  function getRegistrosLocal() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
+  }
+
+  function siguienteNumero() {
+    const lista = getRegistrosLocal();
+    if (!lista.length) return 1;
+    return Math.max(...lista.map(r => r.numero || 0)) + 1;
+  }
+
+  function guardarIncidenciaLocal() {
+    const hotel    = document.getElementById('fHotel').value;
+    const dep      = document.getElementById('fDep').value;
+    const fecha    = document.getElementById('fFecha').value;
+    const dali     = document.getElementById('fDali').value.trim();
+    const prov     = document.getElementById('fProveedor').value.trim();
+    const sap      = document.getElementById('fSap').value.trim();
+    const albaran  = document.getElementById('fAlbaran').value.trim();
+    const ref      = document.getElementById('fReferencia').value.trim();
+    const desc     = document.getElementById('fDesc').value.trim();
+    const medidas  = document.getElementById('fMedidas').value.trim();
+    const solucion = document.getElementById('fSolucion').value.trim();
+    const tipoR    = document.getElementById('fTipoRiesgo').value.trim();
+    const nivelR   = parseInt(document.getElementById('fNivelRiesgo').value || '0');
+    if (!hotel || !dep || !fecha || !prov || !desc) return null;
+    const numero = siguienteNumero();
+    const reg = {
+      numero, fecha, hotel,
+      departamento: dep,
+      numero_dali: dali,
+      proveedor: prov,
+      sap_proveedor: sap,
+      numero_albaran: albaran,
+      referencia: ref,
+      descripcion: desc,
+      nivel_riesgo: nivelR,
+      riesgo: tipoR,
+      medidas_correctoras: medidas,
+      solucion_proveedor: solucion,
+      cierre: 0,
+      foto_url: null,
+      created_at: new Date().toISOString()
+    };
+    const lista = getRegistrosLocal();
+    lista.unshift(reg);
+    localStorage.setItem(LS_KEY, JSON.stringify(lista));
+    document.getElementById('numRegistro').textContent = String(numero).padStart(4,'0');
+    return numero;
+  }
   const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmaXd1bG9pcGFwc2V6bXNzeWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDA5NDgsImV4cCI6MjA5MTM3Njk0OH0.Wjs298hA8xAnIQ4IQHEq3eEfaygF-6FY_5I4i2Se3ZY';
   const ADMIN_EMAIL = 'centralcomprascanarias.princess@gmail.com';
 
@@ -848,6 +903,7 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     tipoRiesgo = '';
     quitarFoto();
     actualizarCorreoComprador();
+    cargarNumeroRegistro();
   }
 
   async function cargarRegistro() {
@@ -997,6 +1053,27 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast('Excel descargado correctamente', 'ok');
+  }
+
+  async function guardarYRegistrar() {
+    const btn = document.getElementById('btnGuardar');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    const numero = await guardarIncidenciaLocal();
+    btn.disabled = false;
+    btn.textContent = '💾 Guardar en registro';
+    if (numero) {
+      resetForm();
+    }
+  }
+
+  function borrarTodoRegistro() {
+    if (!confirm('¿Seguro que quieres borrar todo el registro? Esta acción no se puede deshacer.')) return;
+    localStorage.removeItem(LS_KEY);
+    todosRegistros = [];
+    filtrarTabla();
+    cargarNumeroRegistro();
+    toast('Registro borrado', 'ok');
   }
 
   function verFoto(url) {
@@ -1178,7 +1255,19 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     doc.setFont('helvetica','italic');
     doc.text('by Frankus71',196,292,{align:'right'});
 
-    doc.save('incidencia_'+numero+'.pdf');
+      doc.save('incidencia_'+numero+'.pdf');
+    }; // fin dibujarCabecera
+
+    // Cargar logo desde archivo local
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      dibujarCabecera(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => dibujarCabecera(null);
+    img.src = 'logo_princess_header.png';
   }
 
   function abrirCorreoIncidencia() {
@@ -1199,12 +1288,9 @@ Adjuntar PDF generado desde el portal.`);
     }
   });
 
-  async function cargarNumeroRegistro() {
-    try {
-      const todos = await supaFetch('incidencias?select=numero&order=numero.desc&limit=1');
-      const siguiente = (todos && todos.length > 0 && todos[0].numero) ? todos[0].numero + 1 : 1;
-      document.getElementById('numRegistro').textContent = String(siguiente).padStart(4,'0');
-    } catch(e) { document.getElementById('numRegistro').textContent = '—'; }
+  function cargarNumeroRegistro() {
+    const n = siguienteNumero();
+    document.getElementById('numRegistro').textContent = String(n).padStart(4,'0');
   }
 
   cargarNumeroRegistro();

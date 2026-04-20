@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Incidencias · Princess Hotels</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0f0d0a;
@@ -383,7 +383,7 @@
         <input type="date" id="fFecha">
       </div>
       <div class="form-group">
-        <label>Nº entrada DALI</label>
+        <label>Nº Entrada</label>
         <input type="text" id="fDali" placeholder="DALI / Pedido">
       </div>
       <div class="form-group span2">
@@ -403,8 +403,8 @@
         <input type="hidden" id="fProveedorCodigo">
       </div>
       <div class="form-group">
-        <label>Nº SAP proveedor</label>
-        <input type="text" id="fSap" placeholder="Código SAP del proveedor">
+        <label>Nº Proveedor SAP</label>
+        <input type="text" id="fSap" placeholder="Se rellena automáticamente" readonly style="opacity:0.6;cursor:not-allowed">
       </div>
       <div class="form-group">
         <label>Nº Albarán / Factura</label>
@@ -419,40 +419,95 @@
 
   <div class="seccion">
     <div class="seccion-titulo">Descripción de la incidencia</div>
-    <div class="form-grid full">
-      <div class="form-group">
-        <label>Descripción *</label>
-        <textarea id="fDesc" placeholder="Describe la incidencia con detalle..."></textarea>
+    <div class="form-grid">
+      <div class="form-group span2">
+        <label>Descripción de la incidencia *</label>
+        <select id="fDesc" onchange="autoRiesgo()">
+          <option value="">Selecciona tipo de incidencia...</option>
+          <option>ARTICULO DETERIORADO</option>
+          <option>DIFERENCIA CANTIDAD RECIBIDA CON FACTURADA</option>
+          <option>EL ARTICULO ENTREGADO NO SE AJUSTA A LA CALIDAD SOLICITADA</option>
+          <option>EMBALAJE MAL ESTADO: ABOLLADO</option>
+          <option>EMBALAJE MAL ESTADO: OXIDO</option>
+          <option>EMBALAJE MAL ESTADO: ROTO</option>
+          <option>ETIQUETADO ILEGIBLE</option>
+          <option>ETIQUETADO NO VIENE EN ESPAÑOL</option>
+          <option>FALTA DE EMBALAJE</option>
+          <option>FALTA DE ETIQUETADO</option>
+          <option>INSTALACION PRODUCTOS MAL ESTADO</option>
+          <option>MAQUINA MAL FUNCIONAMIENTO</option>
+          <option>NO ENTREGA O FALTA CANTIDAD DE MERCANCIA SOLICITADA</option>
+          <option>NO ES LA REFERENCIA SOLICITADA</option>
+          <option>NO REFLEJA NUMERO DE PEDIDO NI ADJUNTA ORDEN DE PEDIDO</option>
+          <option>NO REFLEJA TRAZABILIDAD EN ALBARAN/FACTURA NI EN HOJA ADJUNTA</option>
+          <option>NO SE CUMPLE ACUERDO</option>
+          <option>PRECIO NO CORRESPONDE</option>
+          <option>PRODUCTO CADUCADO</option>
+          <option>PRODUCTO CONTAMINADO (PLAGAS, ETC)</option>
+          <option>PRODUCTO MAL ESTADO: ASPECTO</option>
+          <option>PRODUCTO MAL ESTADO: COLOR</option>
+          <option>PRODUCTO MAL ESTADO: MOHO</option>
+          <option>PRODUCTO MAL ESTADO: OLOR</option>
+          <option>PRODUCTO PROXIMO A CADUCAR</option>
+          <option>TEMPERATURA NO ADECUADA</option>
+          <option>TRAZABILIDAD ERRONEA</option>
+        </select>
       </div>
       <div class="form-group">
-        <label>Tipo de incidencia</label>
-        <div class="riesgo-btns" style="margin-bottom:10px">
-          <button type="button" class="riesgo-btn activo-tipo" data-tipo="LOGÍSTICO" onclick="selTipoRiesgo('LOGÍSTICO')">LOGÍSTICO</button>
-          <button type="button" class="riesgo-btn" data-tipo="SANITARIO" onclick="selTipoRiesgo('SANITARIO')">SANITARIO</button>
-        </div>
-        <label style="margin-top:4px">Nivel de riesgo</label>
-        <div class="riesgo-btns">
-          <button type="button" class="riesgo-btn" data-nivel="1" onclick="selRiesgo(1)">1</button>
-          <button type="button" class="riesgo-btn" data-nivel="2" onclick="selRiesgo(2)">2</button>
-          <button type="button" class="riesgo-btn" data-nivel="3" onclick="selRiesgo(3)">3</button>
-          <button type="button" class="riesgo-btn" data-nivel="4" onclick="selRiesgo(4)">4</button>
-        </div>
+        <label>Tipo de riesgo</label>
+        <input type="text" id="fTipoRiesgo" readonly style="opacity:0.7;cursor:not-allowed" placeholder="Auto">
+      </div>
+      <div class="form-group">
+        <label>Nivel de riesgo</label>
+        <input type="text" id="fNivelRiesgoDisplay" readonly style="opacity:0.7;cursor:not-allowed" placeholder="Auto">
+        <input type="hidden" id="fNivelRiesgo">
       </div>
       <div class="form-group">
         <label>Medidas correctoras</label>
-        <textarea id="fMedidas" placeholder="Medidas adoptadas..." style="min-height:70px"></textarea>
+        <select id="fMedidas">
+          <option value="">Selecciona medida...</option>
+          <option>SE CORRIGE CANTIDAD EN ALBARAN/FACTURA Y SE INFORMA A CENTRAL DE COMPRAS</option>
+          <option>SE INFORMA A CENTRAL DE COMPRA DE MERCANCIA CON INCIDENCIA YA RECIBIDA ANTERIORMENTE</option>
+          <option>SE INFORMA A CENTRAL DE COMPRAS</option>
+          <option>SE RECHAZA LA MERCANCIA - SE REFLEJA EN ALBARAN/FACTURA Y SE INFORMA A CENTRAL DE COMPRAS</option>
+          <option>SE RECIBE LA MERCANCIA Y SE REFLEJA EN ALBARAN/FACTURA Y SE INFORMA A CENTRAL DE COMPRAS</option>
+          <option>SE INFORMA EL SSTT DEL PROVEDOR Y SE PASA INCIDENCIA A CENTRAL</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Solución proveedor</label>
+        <select id="fSolucion">
+          <option value="">Selecciona solución...</option>
+          <option>CAMBIA DE MARCA PARA SIGUIENTES ENTREGAS</option>
+          <option>CAMBIO DE MERCANCIA</option>
+          <option>EMPEZARA A ENVIAR EN HOJA ADJUNTA LA TRAZABILIDAD</option>
+          <option>EMPEZARA A ENVIAR ORDEN DE PEDIDO ADJUNTO</option>
+          <option>EMPEZARA A REFLEJAR NUMERO DE PEDIDO</option>
+          <option>EMPEZARA A REFLEJAR TRAZABILIDAD EN ALBARAN/FACTURA</option>
+          <option>ENTREGA MERCANCIA</option>
+          <option>ENVIA ETIQUETADO/DOCUMENTACION</option>
+          <option>INDICA FECHA DE ENTREGA</option>
+          <option>NO APORTA SOLUCION</option>
+          <option>NO TIENE STOCK</option>
+          <option>RECTIFICA ALBARAN/FACTURA</option>
+          <option>REPOSICION SIN CARGO</option>
+          <option>RETIRA Y ABONA MERCANCIA</option>
+          <option>SE ACEPTADA CAMBIO REFERENCIA DESDE COMPRAS</option>
+          <option>TECNICO CORRIGE ANOMALIA</option>
+        </select>
       </div>
     </div>
   </div>
 
   <div class="seccion">
     <div class="seccion-titulo">Foto de la incidencia</div>
-    <div class="foto-area" id="fotoArea">
-      <input type="file" id="fFoto" accept="image/*" capture="environment" onchange="previsualizarFoto(event)">
-      <div class="ico">📷</div>
-      <p>Toca para hacer foto o seleccionar imagen</p>
+    <div class="foto-area" id="fotoArea" onclick="document.getElementById('fFoto').click()">
+      <input type="file" id="fFoto" accept="image/*" capture="environment" style="display:none" onchange="previsualizarFoto(event)">
+      <div class="ico" id="fotoIco">📷</div>
+      <p id="fotoTxt">Toca para hacer foto o seleccionar imagen</p>
     </div>
     <img class="foto-preview" id="fotoPreview">
+    <button type="button" id="btnCambiarFoto" style="display:none;margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--gold2);border-radius:10px;padding:8px 18px;font-family:Outfit,sans-serif;font-size:13px;cursor:pointer" onclick="quitarFoto()">✕ Quitar foto</button>
   </div>
 
   <button class="btn-enviar" id="btnEnviar" onclick="enviarIncidencia()">Enviar incidencia</button>
@@ -570,20 +625,50 @@
     if (input) input.value = correo;
   }
 
-  function selTipoRiesgo(tipo) {
-    tipoRiesgo = tipo;
-    document.querySelectorAll('.riesgo-btn[data-tipo]').forEach(b => {
-      b.className = 'riesgo-btn';
-      if (b.dataset.tipo === tipo) b.classList.add('activo-tipo');
-    });
-  }
+  const DESCRIPCION_RIESGO = {
+    'ARTICULO DETERIORADO': [0,'LOGISTICO'],
+    'DIFERENCIA CANTIDAD RECIBIDA CON FACTURADA': [0,'LOGISTICO'],
+    'EL ARTICULO ENTREGADO NO SE AJUSTA A LA CALIDAD SOLICITADA': [0,'LOGISTICO'],
+    'EMBALAJE MAL ESTADO: ABOLLADO': [1,'ALIMENTARIO'],
+    'EMBALAJE MAL ESTADO: OXIDO': [1,'ALIMENTARIO'],
+    'EMBALAJE MAL ESTADO: ROTO': [1,'ALIMENTARIO'],
+    'ETIQUETADO ILEGIBLE': [1,'ALIMENTARIO'],
+    'ETIQUETADO NO VIENE EN ESPAÑOL': [2,'ALIMENTARIO'],
+    'FALTA DE EMBALAJE': [1,'ALIMENTARIO'],
+    'FALTA DE ETIQUETADO': [2,'ALIMENTARIO'],
+    'INSTALACION PRODUCTOS MAL ESTADO': [2,'PREVENCION'],
+    'MAQUINA MAL FUNCIONAMIENTO': [0,'TECNICO'],
+    'NO ENTREGA O FALTA CANTIDAD DE MERCANCIA SOLICITADA': [0,'LOGISTICO'],
+    'NO ES LA REFERENCIA SOLICITADA': [0,'LOGISTICO'],
+    'NO REFLEJA NUMERO DE PEDIDO NI ADJUNTA ORDEN DE PEDIDO': [0,'LOGISTICO'],
+    'NO REFLEJA TRAZABILIDAD EN ALBARAN/FACTURA NI EN HOJA ADJUNTA': [0,'LOGISTICO'],
+    'NO SE CUMPLE ACUERDO': [0,'LOGISTICO'],
+    'PRECIO NO CORRESPONDE': [1,'ADMINISTRATIVO'],
+    'PRODUCTO CADUCADO': [3,'ALIMENTARIO'],
+    'PRODUCTO CONTAMINADO (PLAGAS, ETC)': [3,'ALIMENTARIO'],
+    'PRODUCTO MAL ESTADO: ASPECTO': [3,'ALIMENTARIO'],
+    'PRODUCTO MAL ESTADO: COLOR': [3,'ALIMENTARIO'],
+    'PRODUCTO MAL ESTADO: MOHO': [3,'ALIMENTARIO'],
+    'PRODUCTO MAL ESTADO: OLOR': [3,'ALIMENTARIO'],
+    'PRODUCTO PROXIMO A CADUCAR': [2,'ALIMENTARIO'],
+    'TEMPERATURA NO ADECUADA': [3,'ALIMENTARIO'],
+    'TRAZABILIDAD ERRONEA': [3,'ALIMENTARIO'],
+  };
 
-  function selRiesgo(n) {
-    nivelRiesgo = n;
-    document.querySelectorAll('.riesgo-btn[data-nivel]').forEach(b => {
-      b.className = 'riesgo-btn';
-      if(parseInt(b.dataset.nivel) === n) b.classList.add('activo-'+Math.min(n,3));
-    });
+  function autoRiesgo() {
+    const desc = document.getElementById('fDesc').value;
+    const data = DESCRIPCION_RIESGO[desc];
+    if (data) {
+      nivelRiesgo = data[0];
+      tipoRiesgo  = data[1];
+      document.getElementById('fNivelRiesgo').value = data[0];
+      document.getElementById('fNivelRiesgoDisplay').value = data[0] + ' / 3';
+      document.getElementById('fTipoRiesgo').value = data[1];
+    } else {
+      document.getElementById('fNivelRiesgo').value = '';
+      document.getElementById('fNivelRiesgoDisplay').value = '';
+      document.getElementById('fTipoRiesgo').value = '';
+    }
   }
 
   function previsualizarFoto(e) {
@@ -592,8 +677,22 @@
     const prev = document.getElementById('fotoPreview');
     prev.src = URL.createObjectURL(file);
     prev.style.display = 'block';
-    document.querySelector('.foto-area .ico').style.display = 'none';
-    document.querySelector('.foto-area p').style.display = 'none';
+    document.getElementById('fotoIco').style.display = 'none';
+    document.getElementById('fotoTxt').style.display = 'none';
+    document.getElementById('fotoArea').style.pointerEvents = 'none';
+    document.getElementById('fotoArea').style.cursor = 'default';
+    document.getElementById('btnCambiarFoto').style.display = 'inline-block';
+  }
+
+  function quitarFoto() {
+    document.getElementById('fFoto').value = '';
+    document.getElementById('fotoPreview').style.display = 'none';
+    document.getElementById('fotoPreview').src = '';
+    document.getElementById('fotoIco').style.display = '';
+    document.getElementById('fotoTxt').style.display = '';
+    document.getElementById('fotoArea').style.pointerEvents = '';
+    document.getElementById('fotoArea').style.cursor = 'pointer';
+    document.getElementById('btnCambiarFoto').style.display = 'none';
   }
 
   async function supaFetch(endpoint, opts={}) {
@@ -630,7 +729,9 @@
   }
 
   function riesgoTexto() {
-    return `${tipoRiesgo} · NIVEL ${nivelRiesgo}`;
+    const t = document.getElementById('fTipoRiesgo')?.value || tipoRiesgo || '-';
+    const n = document.getElementById('fNivelRiesgo')?.value ?? nivelRiesgo;
+    return `${t} · NIVEL ${n}`;
   }
 
   async function enviarIncidencia() {
@@ -644,6 +745,9 @@
     const ref     = document.getElementById('fReferencia').value.trim();
     const desc    = document.getElementById('fDesc').value.trim();
     const medidas = document.getElementById('fMedidas').value.trim();
+    const solucion = document.getElementById('fSolucion').value.trim();
+    const tipoR   = document.getElementById('fTipoRiesgo').value.trim();
+    const nivelR  = document.getElementById('fNivelRiesgo').value || 0;
     const fotoFile = document.getElementById('fFoto').files[0];
 
     if(!hotel||!dep||!fecha||!prov||!desc) { toast('Completa los campos obligatorios','err'); return; }
@@ -673,9 +777,10 @@
           numero_albaran: albaran,
           referencia: ref,
           descripcion: desc,
-          nivel_riesgo: nivelRiesgo,
-          riesgo: riesgoTexto(),
+          nivel_riesgo: parseInt(nivelR),
+          riesgo: tipoR,
           medidas_correctoras: medidas,
+          solucion_proveedor: solucion,
           cierre: 0,
           foto_url
         })
@@ -724,17 +829,11 @@ Registro generado automáticamente · Princess Hotels Canarias`
   }
 
   function resetForm() {
-    ['fHotel','fDep','fFecha','fDali','fProveedor','fSap','fAlbaran','fReferencia','fDesc','fMedidas','fCorreoComprador']
-      .forEach(id => document.getElementById(id).value = '');
-    nivelRiesgo = 1;
-    tipoRiesgo = 'LOGÍSTICO';
-    document.querySelectorAll('.riesgo-btn[data-nivel], .riesgo-btn[data-tipo]').forEach(b => b.className = 'riesgo-btn');
-    selTipoRiesgo('LOGÍSTICO');
-    selRiesgo(1);
-    document.getElementById('fFoto').value = '';
-    document.getElementById('fotoPreview').style.display = 'none';
-    document.querySelector('.foto-area .ico').style.display = '';
-    document.querySelector('.foto-area p').style.display = '';
+    ['fHotel','fDep','fFecha','fDali','fProveedor','fSap','fAlbaran','fReferencia','fDesc','fMedidas','fSolucion','fCorreoComprador','fTipoRiesgo','fNivelRiesgoDisplay','fNivelRiesgo']
+      .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    nivelRiesgo = 0;
+    tipoRiesgo = '';
+    quitarFoto();
     actualizarCorreoComprador();
   }
 
@@ -895,8 +994,6 @@ Registro generado automáticamente · Princess Hotels Canarias`
 
   // Fecha de hoy por defecto
   document.getElementById('fFecha').valueAsDate = new Date();
-  selTipoRiesgo('LOGÍSTICO');
-  selRiesgo(1);
   actualizarCorreoComprador();
 
   // BASE DE PROVEEDORES
@@ -957,6 +1054,7 @@ Registro generado automáticamente · Princess Hotels Canarias`
     const ref = document.getElementById('fReferencia').value.trim();
     const desc = document.getElementById('fDesc').value.trim();
     const medidas = document.getElementById('fMedidas').value.trim();
+    const solucion = document.getElementById('fSolucion')?.value || '-';
     return `INCIDENCIA #${numero}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Hotel:        ${hotel || '-'}
@@ -967,19 +1065,20 @@ DATOS PROVEEDOR
 Proveedor:    ${prov || '-'}
 SAP prov.:    ${sap || '-'}
 Albarán/Fac:  ${albaran || '-'}
-Nº DALI:      ${dali || '-'}
+Nº Entrada:   ${dali || '-'}
 Referencia:   ${ref || '-'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 INCIDENCIA
 Descripción:  ${desc || '-'}
-Nivel riesgo: ${riesgoTexto()}
+Riesgo:       ${riesgoTexto()}
 Medidas:      ${medidas || '-'}
+Solución:     ${solucion}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Registro generado automáticamente · Princess Hotels Canarias`;
   }
 
   function generarPdfIncidencia() {
-    const numero = document.getElementById('numRegistro')?.textContent?.trim() || '—';
+    const numero  = document.getElementById('numRegistro')?.textContent?.trim() || '—';
     const hotel   = document.getElementById('fHotel').value || '-';
     const dep     = document.getElementById('fDep').value || '-';
     const fecha   = document.getElementById('fFecha').value || '-';
@@ -990,106 +1089,69 @@ Registro generado automáticamente · Princess Hotels Canarias`;
     const ref     = document.getElementById('fReferencia').value.trim() || '-';
     const desc    = document.getElementById('fDesc').value.trim() || '-';
     const medidas = document.getElementById('fMedidas').value.trim() || '-';
+    const solucion= document.getElementById('fSolucion').value.trim() || '-';
+    const tipoR   = document.getElementById('fTipoRiesgo').value || '-';
+    const nivelR  = document.getElementById('fNivelRiesgo').value || '0';
 
+    if (!window.jspdf) { toast('jsPDF no disponible. Necesita conexión a internet','err'); return; }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const gold=[180,140,60], dark=[26,22,16], sub=[120,110,95], light=[230,225,215];
 
-    const gold = [180, 140, 60];
-    const dark = [26, 22, 16];
-    const sub  = [120, 110, 95];
-
-    // Fondo oscuro
-    doc.setFillColor(...dark);
-    doc.rect(0, 0, 210, 297, 'F');
-
-    // Cabecera dorada
-    doc.setFillColor(...gold);
-    doc.rect(0, 0, 210, 28, 'F');
-    doc.setTextColor(26, 22, 16);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('INCIDENCIA  #' + numero, 14, 12);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
+    doc.setFillColor(...dark); doc.rect(0,0,210,297,'F');
+    doc.setFillColor(...gold); doc.rect(0,0,210,28,'F');
+    doc.setTextColor(...dark);
+    doc.setFontSize(16); doc.setFont('helvetica','bold');
+    doc.text('INCIDENCIA  #'+numero, 14, 12);
+    doc.setFontSize(9); doc.setFont('helvetica','normal');
     doc.text('Princess Hotels & Resorts · Central Compras Canarias', 14, 20);
     doc.setFontSize(8);
-    doc.text('Generado: ' + new Date().toLocaleDateString('es-ES'), 150, 20);
+    doc.text('Fecha: '+new Date().toLocaleDateString('es-ES'), 165, 20);
 
-    // Función helpers
-    const seccion = (titulo, y) => {
-      doc.setFillColor(40, 35, 28);
-      doc.rect(10, y, 190, 7, 'F');
-      doc.setTextColor(...gold);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'bold');
-      doc.text(titulo, 14, y + 5);
-      return y + 10;
+    const bloque = (titulo, y) => {
+      doc.setFillColor(40,35,28); doc.rect(10,y,190,7,'F');
+      doc.setTextColor(...gold); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+      doc.text(titulo,14,y+5); return y+10;
     };
-    const campo = (label, valor, x, y, w) => {
-      doc.setTextColor(...sub);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
+    const fld = (label, val, x, y, w=85) => {
+      doc.setTextColor(...sub); doc.setFontSize(6.5); doc.setFont('helvetica','bold');
       doc.text(label.toUpperCase(), x, y);
-      doc.setTextColor(230, 225, 215);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      const lines = doc.splitTextToSize(String(valor), w || 85);
-      doc.text(lines, x, y + 5);
-      return y + 5 + (lines.length * 4.5);
+      doc.setTextColor(...light); doc.setFontSize(8.5); doc.setFont('helvetica','normal');
+      const lines = doc.splitTextToSize(String(val), w);
+      doc.text(lines, x, y+4.5);
+      return y+4.5+(lines.length*4.2);
     };
 
-    let y = 35;
+    let y=35;
+    y=bloque('DATOS DEL HOTEL',y);
+    const r1=fld('Hotel',hotel,14,y,85), r2=fld('Departamento',dep,105,y,95);
+    y=Math.max(r1,r2)+2;
+    fld('Fecha',fecha,14,y,85); y+=12;
 
-    // Sección hotel
-    y = seccion('DATOS DEL HOTEL', y);
-    const col1end = campo('Hotel', hotel, 14, y, 85);
-    const col2end = campo('Departamento', dep, 105, y, 85);
-    y = Math.max(col1end, col2end) + 2;
-    campo('Fecha', fecha, 14, y, 85);
-    y += 12;
+    doc.setDrawColor(...gold); doc.setLineWidth(0.2); doc.line(10,y,200,y); y+=5;
+    y=bloque('DATOS DEL PROVEEDOR',y);
+    const p1=fld('Proveedor',prov,14,y,85), p2=fld('Nº SAP',sap,105,y,95);
+    y=Math.max(p1,p2)+2;
+    const p3=fld('Albarán/Factura',albaran,14,y,85), p4=fld('Nº Entrada',dali,105,y,95);
+    y=Math.max(p3,p4)+2;
+    fld('Referencia',ref,14,y,180); y+=12;
 
-    // Línea separadora
-    doc.setDrawColor(...gold);
-    doc.setLineWidth(0.3);
-    doc.line(10, y, 200, y);
-    y += 5;
+    doc.line(10,y,200,y); y+=5;
+    y=bloque('INCIDENCIA',y);
+    const d1=fld('Descripción',desc,14,y,180);
+    y=d1+2;
+    const i1=fld('Tipo de riesgo',tipoR,14,y,85), i2=fld('Nivel de riesgo',nivelR+' / 3',105,y,95);
+    y=Math.max(i1,i2)+2;
+    const m1=fld('Medidas correctoras',medidas,14,y,180); y=m1+2;
+    const s1=fld('Solución proveedor',solucion,14,y,180); y=s1+5;
 
-    // Sección proveedor
-    y = seccion('DATOS DEL PROVEEDOR', y);
-    const p1 = campo('Proveedor', prov, 14, y, 85);
-    const p2 = campo('Nº SAP', sap, 105, y, 85);
-    y = Math.max(p1, p2) + 2;
-    const p3 = campo('Albarán / Factura', albaran, 14, y, 85);
-    const p4 = campo('Nº Entrada DALI', dali, 105, y, 85);
-    y = Math.max(p3, p4) + 2;
-    campo('Referencia', ref, 14, y, 180);
-    y += 14;
+    doc.setFillColor(...gold); doc.rect(0,285,210,12,'F');
+    doc.setTextColor(...dark); doc.setFontSize(7); doc.setFont('helvetica','bold');
+    doc.text('Princess Hotels & Resorts · Central Compras Canarias',14,292);
+    doc.setFont('helvetica','italic');
+    doc.text('by Frankus71',196,292,{align:'right'});
 
-    doc.line(10, y, 200, y);
-    y += 5;
-
-    // Sección incidencia
-    y = seccion('DESCRIPCIÓN DE LA INCIDENCIA', y);
-    campo('Descripción', desc, 14, y, 180);
-    y += Math.ceil(doc.splitTextToSize(desc, 180).length * 4.5) + 8;
-    campo('Tipo y nivel de riesgo', riesgoTexto(), 14, y, 85);
-    campo('Medidas correctoras', medidas, 105, y, 85);
-    y += Math.max(
-      Math.ceil(doc.splitTextToSize(riesgoTexto(), 85).length * 4.5),
-      Math.ceil(doc.splitTextToSize(medidas, 85).length * 4.5)
-    ) + 10;
-
-    // Pie
-    doc.setFillColor(...gold);
-    doc.rect(0, 285, 210, 12, 'F');
-    doc.setTextColor(26, 22, 16);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Princess Hotels & Resorts · Central Compras Canarias', 14, 292);
-    doc.setFont('helvetica', 'italic');
-    doc.text('by Frankus71', 185, 292, { align: 'right' });
-
-    doc.save(`incidencia_${numero}.pdf`);
+    doc.save('incidencia_'+numero+'.pdf');
   }
 
   function abrirCorreoIncidencia() {

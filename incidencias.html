@@ -465,10 +465,10 @@
       <div class="form-group">
         <label>Medidas correctoras</label>
         <select id="fMedidas">
-          <option value="">Selecciona medida...</option>
+          <option value="" disabled>Selecciona medida...</option>
+          <option selected>SE INFORMA A CENTRAL DE COMPRAS</option>
           <option>SE CORRIGE CANTIDAD EN ALBARAN/FACTURA Y SE INFORMA A CENTRAL DE COMPRAS</option>
           <option>SE INFORMA A CENTRAL DE COMPRA DE MERCANCIA CON INCIDENCIA YA RECIBIDA ANTERIORMENTE</option>
-          <option>SE INFORMA A CENTRAL DE COMPRAS</option>
           <option>SE RECHAZA LA MERCANCIA - SE REFLEJA EN ALBARAN/FACTURA Y SE INFORMA A CENTRAL DE COMPRAS</option>
           <option>SE RECIBE LA MERCANCIA Y SE REFLEJA EN ALBARAN/FACTURA Y SE INFORMA A CENTRAL DE COMPRAS</option>
           <option>SE INFORMA EL SSTT DEL PROVEDOR Y SE PASA INCIDENCIA A CENTRAL</option>
@@ -478,22 +478,9 @@
         <label>Solución proveedor</label>
         <select id="fSolucion">
           <option value="">Selecciona solución...</option>
-          <option>CAMBIA DE MARCA PARA SIGUIENTES ENTREGAS</option>
-          <option>CAMBIO DE MERCANCIA</option>
-          <option>EMPEZARA A ENVIAR EN HOJA ADJUNTA LA TRAZABILIDAD</option>
-          <option>EMPEZARA A ENVIAR ORDEN DE PEDIDO ADJUNTO</option>
-          <option>EMPEZARA A REFLEJAR NUMERO DE PEDIDO</option>
-          <option>EMPEZARA A REFLEJAR TRAZABILIDAD EN ALBARAN/FACTURA</option>
-          <option>ENTREGA MERCANCIA</option>
-          <option>ENVIA ETIQUETADO/DOCUMENTACION</option>
-          <option>INDICA FECHA DE ENTREGA</option>
-          <option>NO APORTA SOLUCION</option>
-          <option>NO TIENE STOCK</option>
-          <option>RECTIFICA ALBARAN/FACTURA</option>
-          <option>REPOSICION SIN CARGO</option>
-          <option>RETIRA Y ABONA MERCANCIA</option>
-          <option>SE ACEPTADA CAMBIO REFERENCIA DESDE COMPRAS</option>
-          <option>TECNICO CORRIGE ANOMALIA</option>
+          <option>CAMBIO TOTAL</option>
+          <option>CAMBIO PARCIAL</option>
+          <option>SE ADMITE TODA</option>
         </select>
       </div>
     </div>
@@ -501,8 +488,8 @@
 
   <div class="seccion">
     <div class="seccion-titulo">Foto de la incidencia</div>
-    <div class="foto-area" id="fotoArea" onclick="document.getElementById('fFoto').click()">
-      <input type="file" id="fFoto" accept="image/*" multiple style="display:none" onchange="previsualizarFoto(event)">
+    <div class="foto-area" id="fotoArea" onclick="document.getElementById('fFoto').click()" style="cursor:pointer">
+      <input type="file" id="fFoto" accept="image/*" multiple style="position:absolute;width:0;height:0;opacity:0" onchange="previsualizarFoto(event)">
       <div class="ico" id="fotoIco">📷</div>
       <p id="fotoTxt">Toca para añadir fotos (puedes seleccionar varias)</p>
     </div>
@@ -645,6 +632,7 @@
   }
   const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmaXd1bG9pcGFwc2V6bXNzeWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDA5NDgsImV4cCI6MjA5MTM3Njk0OH0.Wjs298hA8xAnIQ4IQHEq3eEfaygF-6FY_5I4i2Se3ZY';
   const ADMIN_EMAIL = 'centralcomprascanarias.princess@gmail.com';
+  const DIRECTOR_EMAIL = 'directorcompras.canarias@princess-hotels.com';
 
   const EMAIL_COMPRADOR = {
     'Hotel Mogán Princess':              'centralcompras2.canarias@princess-hotels.com',
@@ -677,7 +665,7 @@
     const hotel = document.getElementById('fHotel').value;
     const correo = EMAIL_COMPRADOR[hotel] || ADMIN_EMAIL;
     const input = document.getElementById('fCorreoComprador');
-    if (input) input.value = correo;
+    if (input) input.value = hotel ? correo : '';
   }
 
   const DESCRIPCION_RIESGO = {
@@ -881,7 +869,7 @@ ${foto_url ? 'Fotos: ' + foto_url : 'Sin fotos adjuntas'}
 Registro generado automaticamente - Princess Hotels & Resorts - Central Compras Canarias`
       );
 
-      const cc = encodeURIComponent(ADMIN_EMAIL);
+      const cc = encodeURIComponent(ADMIN_EMAIL + ',' + DIRECTOR_EMAIL);
       window.location.href = `mailto:${comprador}?cc=${cc}&subject=${asunto}&body=${cuerpo}`;
 
       toast(`Incidencia #${numero} registrada`, 'ok');
@@ -1060,11 +1048,21 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     btn.disabled = true;
     btn.textContent = 'Guardando...';
     const numero = await guardarIncidenciaLocal();
+    if (!numero) {
+      btn.disabled = false;
+      btn.textContent = '💾 Guardar en registro';
+      return;
+    }
+    btn.textContent = 'Generando PDF...';
+    await new Promise(r => setTimeout(r, 200));
+    generarPdfIncidencia();
+    await new Promise(r => setTimeout(r, 600));
+    btn.textContent = 'Abriendo correo...';
+    await new Promise(r => setTimeout(r, 400));
+    abrirCorreoIncidencia();
     btn.disabled = false;
     btn.textContent = '💾 Guardar en registro';
-    if (numero) {
-      resetForm();
-    }
+    resetForm();
   }
 
   function borrarTodoRegistro() {
@@ -1112,14 +1110,15 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     const ql = q.toLowerCase();
     const res = PROVEEDORES.filter(p =>
       p.nombre.toLowerCase().includes(ql) || String(p.codigo).includes(ql)
-    ).slice(0, 12);
+    ).slice(0, 15);
     if (!res.length) { box.style.display='none'; box.innerHTML=''; return; }
     box.innerHTML = res.map(p => `
       <div data-nombre="${escapeHtml(p.nombre)}" data-codigo="${escapeHtml(p.codigo)}"
-        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;"
+        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:10px"
         onmouseover="this.style.background='rgba(176,141,87,0.1)'"
         onmouseout="this.style.background=''">
-        <strong>${escapeHtml(p.nombre)}</strong>
+        <span style="font-weight:600">${escapeHtml(p.nombre)}</span>
+        <span style="color:var(--sub);font-size:11px;white-space:nowrap">${escapeHtml(p.codigo)}</span>
       </div>`).join('');
     box.querySelectorAll('div[data-nombre]').forEach(el => {
       el.addEventListener('mousedown', ev => {
@@ -1279,7 +1278,7 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     const cuerpo = encodeURIComponent(construirTextoIncidencia(numero) + `
 
 Adjuntar PDF generado desde el portal.`);
-    window.location.href = `mailto:${comprador}?cc=${encodeURIComponent(ADMIN_EMAIL)}&subject=${asunto}&body=${cuerpo}`;
+    window.location.href = `mailto:${comprador}?cc=${encodeURIComponent(ADMIN_EMAIL + ',' + DIRECTOR_EMAIL)}&subject=${asunto}&body=${cuerpo}`;
   }
 
   document.addEventListener('click', e => {

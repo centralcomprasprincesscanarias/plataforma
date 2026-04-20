@@ -412,7 +412,7 @@
         <input type="hidden" id="fProveedorCodigo">
       </div>
       <div class="form-group">
-        <label>Nº Proveedor</label>
+        <label>Nº SAP Proveedor</label>
         <input type="text" id="fSap" placeholder="Se rellena automáticamente" readonly style="opacity:0.6;cursor:not-allowed">
       </div>
       <div class="form-group">
@@ -431,36 +431,7 @@
     <div class="form-grid">
       <div class="form-group span2">
         <label>Descripción de la incidencia *</label>
-        <select id="fDesc" onchange="autoRiesgo()">
-          <option value="">Selecciona tipo de incidencia...</option>
-          <option>ARTICULO DETERIORADO</option>
-          <option>DIFERENCIA CANTIDAD RECIBIDA CON FACTURADA</option>
-          <option>EL ARTICULO ENTREGADO NO SE AJUSTA A LA CALIDAD SOLICITADA</option>
-          <option>EMBALAJE MAL ESTADO: ABOLLADO</option>
-          <option>EMBALAJE MAL ESTADO: OXIDO</option>
-          <option>EMBALAJE MAL ESTADO: ROTO</option>
-          <option>ETIQUETADO ILEGIBLE</option>
-          <option>ETIQUETADO NO VIENE EN ESPAÑOL</option>
-          <option>FALTA DE EMBALAJE</option>
-          <option>FALTA DE ETIQUETADO</option>
-          <option>INSTALACION PRODUCTOS MAL ESTADO</option>
-          <option>MAQUINA MAL FUNCIONAMIENTO</option>
-          <option>NO ENTREGA O FALTA CANTIDAD DE MERCANCIA SOLICITADA</option>
-          <option>NO ES LA REFERENCIA SOLICITADA</option>
-          <option>NO REFLEJA NUMERO DE PEDIDO NI ADJUNTA ORDEN DE PEDIDO</option>
-          <option>NO REFLEJA TRAZABILIDAD EN ALBARAN/FACTURA NI EN HOJA ADJUNTA</option>
-          <option>NO SE CUMPLE ACUERDO</option>
-          <option>PRECIO NO CORRESPONDE</option>
-          <option>PRODUCTO CADUCADO</option>
-          <option>PRODUCTO CONTAMINADO (PLAGAS, ETC)</option>
-          <option>PRODUCTO MAL ESTADO: ASPECTO</option>
-          <option>PRODUCTO MAL ESTADO: COLOR</option>
-          <option>PRODUCTO MAL ESTADO: MOHO</option>
-          <option>PRODUCTO MAL ESTADO: OLOR</option>
-          <option>PRODUCTO PROXIMO A CADUCAR</option>
-          <option>TEMPERATURA NO ADECUADA</option>
-          <option>TRAZABILIDAD ERRONEA</option>
-        </select>
+        <textarea id="fDesc" placeholder="Describe la incidencia con detalle..."></textarea>
       </div>
 
       <div class="form-group">
@@ -849,7 +820,7 @@ DATOS DEL PROVEEDOR
 Proveedor:       ${prov}
 SAP Proveedor:   ${sap}
 Albaran/Factura: ${albaran}
-N Entrada DALI:  ${dali}
+Nº Entrada:      ${dali}
 Referencia:      ${ref}
 
 DESCRIPCION DE LA INCIDENCIA
@@ -945,27 +916,31 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
       doc.addImage(logoData, 'JPEG', margin, y, 36, 16);
     } catch (e) {}
 
-    doc.setFont('helvetica','bold');
-    doc.setFontSize(18);
-    doc.setTextColor(0,0,0);
-    doc.text('PRINCESS HOTELS & RESORTS', margin + 42, y + 7);
-
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(10);
-    doc.text('Departamento Central de Compras · Canarias', margin + 42, y + 14);
-
+    // Fecha arriba a la derecha
     doc.setFont('helvetica','normal');
     doc.setFontSize(9);
+    doc.setTextColor(0,0,0);
     doc.text(new Date().toLocaleDateString('es-ES'), pageW - margin, y + 2, { align:'right' });
 
-    y += 24;
-    doc.setLineWidth(0.5);
-    doc.line(margin, y, pageW - margin, y);
-    y += 8;
+    // Logo a la izquierda
+    try {
+      doc.addImage(logoData, 'JPEG', margin, y, 36, 16);
+    } catch (e) {}
 
+    // Departamento centrado y más grande que el título
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(22);
+    doc.text('Departamento Central de Compras · Canarias', pageW / 2 + 6, y + 8, { align:'center' });
+
+    // Título debajo, más pequeño
     doc.setFont('helvetica','bold');
     doc.setFontSize(16);
-    doc.text('REGISTRO INCIDENCIAS PROVEEDOR', margin, y);
+    doc.text('REGISTRO INCIDENCIAS PROVEEDOR', pageW / 2 + 6, y + 24, { align:'center' });
+
+    // Línea divisoria
+    y += 34;
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageW - margin, y);
     y += 10;
 
     titulo('DATOS DEL HOTEL');
@@ -977,7 +952,7 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     y += 2;
     titulo('DATOS DEL PROVEEDOR');
     campo('Proveedor:', prov);
-    campo('Nº SAP proveedor:', sap);
+    campo('Nº SAP Proveedor:', sap);
     campo('Nº Albarán / Factura:', albaran);
     campo('Nº Entrada:', dali);
     campo('Referencia:', ref);

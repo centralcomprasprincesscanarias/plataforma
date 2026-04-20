@@ -384,7 +384,7 @@
       </div>
       <div class="form-group">
         <label>Nº Entrada</label>
-        <input type="text" id="fDali" placeholder="DALI / Pedido">
+        <input type="text" id="fDali" placeholder="">
       </div>
       <div class="form-group span2">
         <label>Correo comprador</label>
@@ -403,7 +403,7 @@
         <input type="hidden" id="fProveedorCodigo">
       </div>
       <div class="form-group">
-        <label>Nº Proveedor SAP</label>
+        <label>Nº Proveedor</label>
         <input type="text" id="fSap" placeholder="Se rellena automáticamente" readonly style="opacity:0.6;cursor:not-allowed">
       </div>
       <div class="form-group">
@@ -502,12 +502,11 @@
   <div class="seccion">
     <div class="seccion-titulo">Foto de la incidencia</div>
     <div class="foto-area" id="fotoArea" onclick="document.getElementById('fFoto').click()">
-      <input type="file" id="fFoto" accept="image/*" capture="environment" style="display:none" onchange="previsualizarFoto(event)">
+      <input type="file" id="fFoto" accept="image/*" multiple style="display:none" onchange="previsualizarFoto(event)">
       <div class="ico" id="fotoIco">📷</div>
-      <p id="fotoTxt">Toca para hacer foto o seleccionar imagen</p>
+      <p id="fotoTxt">Toca para añadir fotos (puedes seleccionar varias)</p>
     </div>
-    <img class="foto-preview" id="fotoPreview">
-    <button type="button" id="btnCambiarFoto" style="display:none;margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--gold2);border-radius:10px;padding:8px 18px;font-family:Outfit,sans-serif;font-size:13px;cursor:pointer" onclick="quitarFoto()">✕ Quitar foto</button>
+    <div id="galeriaFotos" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;"></div>
   </div>
 
   <button class="btn-enviar" id="btnEnviar" onclick="enviarIncidencia()">Enviar incidencia</button>
@@ -566,12 +565,13 @@
           <th>Referencia</th>
           <th>Descripción</th>
           <th>Riesgo</th>
+          <th>Solución</th>
           <th>Foto</th>
           <th>Estado</th>
         </tr>
       </thead>
       <tbody id="tbodyRegistro">
-        <tr><td colspan="13" class="empty">Cargando...</td></tr>
+        <tr><td colspan="14" class="empty">Cargando...</td></tr>
       </tbody>
     </table>
   </div>
@@ -671,28 +671,36 @@
     }
   }
 
+  let fotosSeleccionadas = [];
+
   function previsualizarFoto(e) {
-    const file = e.target.files[0];
-    if(!file) return;
-    const prev = document.getElementById('fotoPreview');
-    prev.src = URL.createObjectURL(file);
-    prev.style.display = 'block';
-    document.getElementById('fotoIco').style.display = 'none';
-    document.getElementById('fotoTxt').style.display = 'none';
-    document.getElementById('fotoArea').style.pointerEvents = 'none';
-    document.getElementById('fotoArea').style.cursor = 'default';
-    document.getElementById('btnCambiarFoto').style.display = 'inline-block';
+    const nuevas = Array.from(e.target.files);
+    if(!nuevas.length) return;
+    nuevas.forEach(file => {
+      fotosSeleccionadas.push(file);
+      const url = URL.createObjectURL(file);
+      const idx = fotosSeleccionadas.length - 1;
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;display:inline-block;';
+      wrap.dataset.idx = idx;
+      const img = document.createElement('img');
+      img.src = url;
+      img.style.cssText = 'width:100px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = '✕';
+      btn.style.cssText = 'position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1;';
+      btn.onclick = () => { fotosSeleccionadas.splice(idx,1); wrap.remove(); };
+      wrap.appendChild(img); wrap.appendChild(btn);
+      document.getElementById('galeriaFotos').appendChild(wrap);
+    });
+    document.getElementById('fFoto').value = '';
   }
 
   function quitarFoto() {
+    fotosSeleccionadas = [];
+    document.getElementById('galeriaFotos').innerHTML = '';
     document.getElementById('fFoto').value = '';
-    document.getElementById('fotoPreview').style.display = 'none';
-    document.getElementById('fotoPreview').src = '';
-    document.getElementById('fotoIco').style.display = '';
-    document.getElementById('fotoTxt').style.display = '';
-    document.getElementById('fotoArea').style.pointerEvents = '';
-    document.getElementById('fotoArea').style.cursor = 'pointer';
-    document.getElementById('btnCambiarFoto').style.display = 'none';
   }
 
   async function supaFetch(endpoint, opts={}) {
@@ -748,7 +756,7 @@
     const solucion = document.getElementById('fSolucion').value.trim();
     const tipoR   = document.getElementById('fTipoRiesgo').value.trim();
     const nivelR  = document.getElementById('fNivelRiesgo').value || 0;
-    const fotoFile = document.getElementById('fFoto').files[0];
+    // fotos gestionadas en fotosSeleccionadas[]
 
     if(!hotel||!dep||!fecha||!prov||!desc) { toast('Completa los campos obligatorios','err'); return; }
 
@@ -757,9 +765,12 @@
     btn.textContent = 'Enviando...';
 
     try {
-      // 1. Subir foto si existe
+      // 1. Subir fotos
       let foto_url = null;
-      if(fotoFile) foto_url = await subirFoto(fotoFile);
+      if(fotosSeleccionadas.length > 0) {
+        const urls = await Promise.all(fotosSeleccionadas.map(f => subirFoto(f)));
+        foto_url = urls.join(' | ');
+      }
 
       // 2. Obtener próximo número
       const todos = await supaFetch('incidencias?select=numero&order=numero.desc&limit=1');
@@ -790,27 +801,29 @@
       const comprador = EMAIL_COMPRADOR[hotel] || ADMIN_EMAIL;
       const asunto = encodeURIComponent(`Incidencia #${numero} · ${hotel} · ${dep}`);
       const cuerpo = encodeURIComponent(
-`INCIDENCIA #${numero}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Hotel:        ${hotel}
-Departamento: ${dep}
-Fecha:        ${fecha}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DATOS PROVEEDOR
-Proveedor:    ${prov}
-SAP prov.:    ${sap||'-'}
-Albarán/Fac:  ${albaran||'-'}
-Nº DALI:      ${dali||'-'}
-Referencia:   ${ref||'-'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-INCIDENCIA
-Descripción:  ${desc}
-Nivel riesgo: ${riesgoTexto()}
-Medidas:      ${medidas||'-'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${foto_url ? 'Foto adjunta: ' + foto_url : 'Sin foto adjunta'}
+`INCIDENCIA DE PROVEEDOR #${numero}
+--------------------------------------------------
+DATOS DEL HOTEL
+Hotel:           ${hotel}
+Departamento:    ${dep}
+Fecha:           ${fecha}
 
-Registro generado automáticamente · Princess Hotels Canarias`
+DATOS DEL PROVEEDOR
+Proveedor:       ${prov}
+SAP Proveedor:   ${sap||'-'}
+Albaran/Factura: ${albaran||'-'}
+N Entrada DALI:  ${dali||'-'}
+Referencia:      ${ref||'-'}
+
+DESCRIPCION DE LA INCIDENCIA
+Tipo:            ${desc}
+Riesgo:          ${riesgoTexto()}
+Medidas:         ${medidas||'-'}
+Solucion:        ${solucion||'-'}
+--------------------------------------------------
+${foto_url ? 'Fotos: ' + foto_url : 'Sin fotos adjuntas'}
+
+Registro generado automaticamente - Princess Hotels & Resorts - Central Compras Canarias`
       );
 
       const cc = encodeURIComponent(ADMIN_EMAIL);
@@ -838,7 +851,7 @@ Registro generado automáticamente · Princess Hotels Canarias`
   }
 
   async function cargarRegistro() {
-    document.getElementById('tbodyRegistro').innerHTML = '<tr><td colspan="13" class="empty">Cargando...</td></tr>';
+    document.getElementById('tbodyRegistro').innerHTML = '<tr><td colspan="14" class="empty">Cargando...</td></tr>';
     const hotel = document.getElementById('filtHotel').value;
     const dep   = document.getElementById('filtDep').value;
     let q = 'incidencias?order=numero.desc&limit=500';
@@ -848,7 +861,7 @@ Registro generado automáticamente · Princess Hotels Canarias`
       todosRegistros = await supaFetch(q);
       filtrarTabla();
     } catch(e) {
-      document.getElementById('tbodyRegistro').innerHTML = '<tr><td colspan="13" class="empty">Error cargando datos</td></tr>';
+      document.getElementById('tbodyRegistro').innerHTML = '<tr><td colspan="14" class="empty">Error cargando datos</td></tr>';
     }
   }
 
@@ -856,7 +869,7 @@ Registro generado automáticamente · Princess Hotels Canarias`
     const rows = getRegistrosFiltrados();
 
     if(!rows.length) {
-      document.getElementById('tbodyRegistro').innerHTML = '<tr><td colspan="13" class="empty">Sin incidencias</td></tr>';
+      document.getElementById('tbodyRegistro').innerHTML = '<tr><td colspan="14" class="empty">Sin incidencias</td></tr>';
       return;
     }
 
@@ -874,7 +887,8 @@ Registro generado automáticamente · Princess Hotels Canarias`
         <td>${r.referencia||'-'}</td>
         <td style="max-width:200px;font-size:12px">${r.descripcion||'-'}</td>
         <td><span class="badge ${colorRiesgo[r.nivel_riesgo]||'badge-0'}">${r.nivel_riesgo} · ${r.riesgo||'-'}</span></td>
-        <td>${r.foto_url ? `<span style="cursor:pointer;color:var(--gold)" onclick="verFoto('${r.foto_url}')">📷 Ver</span>` : '-'}</td>
+        <td style="font-size:11px">${r.solucion_proveedor||'-'}</td>
+        <td>${r.foto_url ? `<span style="cursor:pointer;color:var(--gold)" onclick="verFotoMulti('${r.foto_url}')">📷 Ver</span>` : '-'}</td>
         <td><span class="badge ${r.cierre ? 'badge-ok' : 'badge-pen'}">${r.cierre ? 'Cerrada' : 'Abierta'}</span></td>
       </tr>
     `).join('');
@@ -935,13 +949,14 @@ Registro generado automáticamente · Princess Hotels Canarias`
               <th>Nivel Riesgo</th>
               <th>Riesgo</th>
               <th>Medidas Correctoras</th>
+              <th>Solución Proveedor</th>
               <th>Estado</th>
               <th>Foto</th>
             </tr>
           </thead>
           <tbody>
             ${rows.map(r => `
-              <tr>
+              <tr style='height:95pt;mso-height-source:userset'>
                 <td>${excelSafe(r.numero)}</td>
                 <td>${excelSafe(r.fecha)}</td>
                 <td>${excelSafe(r.hotel)}</td>
@@ -955,8 +970,15 @@ Registro generado automáticamente · Princess Hotels Canarias`
                 <td>${excelSafe(r.nivel_riesgo)}</td>
                 <td>${excelSafe(r.riesgo)}</td>
                 <td>${excelSafe(r.medidas_correctoras)}</td>
+                <td>${excelSafe(r.solucion_proveedor)}</td>
                 <td>${r.cierre ? 'Cerrada' : 'Abierta'}</td>
-                <td>${r.foto_url ? excelSafe(r.foto_url) : ''}</td>
+                <td style="text-align:center;vertical-align:middle">${
+                  r.foto_url
+                    ? r.foto_url.split(' | ').map(u =>
+                        `<img src="${u}" style="max-width:120px;max-height:90px;object-fit:cover;border-radius:4px;">`
+                      ).join('<br>')
+                    : ''
+                }</td>
               </tr>
             `).join('')}
           </tbody>
@@ -980,6 +1002,10 @@ Registro generado automáticamente · Princess Hotels Canarias`
   function verFoto(url) {
     document.getElementById('modalImg').src = url;
     document.getElementById('modalFoto').classList.add('open');
+  }
+  function verFotoMulti(urlStr) {
+    const urls = urlStr.split(' | ');
+    verFoto(urls[0]); // muestra la primera; mejorable con galería
   }
   function cerrarModal() {
     document.getElementById('modalFoto').classList.remove('open');
@@ -1055,26 +1081,27 @@ Registro generado automáticamente · Princess Hotels Canarias`
     const desc = document.getElementById('fDesc').value.trim();
     const medidas = document.getElementById('fMedidas').value.trim();
     const solucion = document.getElementById('fSolucion')?.value || '-';
-    return `INCIDENCIA #${numero}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Hotel:        ${hotel || '-'}
-Departamento: ${dep || '-'}
-Fecha:        ${fecha || '-'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DATOS PROVEEDOR
-Proveedor:    ${prov || '-'}
-SAP prov.:    ${sap || '-'}
-Albarán/Fac:  ${albaran || '-'}
-Nº Entrada:   ${dali || '-'}
-Referencia:   ${ref || '-'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-INCIDENCIA
-Descripción:  ${desc || '-'}
-Riesgo:       ${riesgoTexto()}
-Medidas:      ${medidas || '-'}
-Solución:     ${solucion}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Registro generado automáticamente · Princess Hotels Canarias`;
+    return `INCIDENCIA DE PROVEEDOR #${numero}
+--------------------------------------------------
+DATOS DEL HOTEL
+Hotel:           ${hotel || '-'}
+Departamento:    ${dep || '-'}
+Fecha:           ${fecha || '-'}
+
+DATOS DEL PROVEEDOR
+Proveedor:       ${prov || '-'}
+SAP Proveedor:   ${sap || '-'}
+Albaran/Factura: ${albaran || '-'}
+N Entrada DALI:  ${dali || '-'}
+Referencia:      ${ref || '-'}
+
+DESCRIPCION DE LA INCIDENCIA
+Tipo:            ${desc || '-'}
+Riesgo:          ${riesgoTexto()}
+Medidas:         ${medidas || '-'}
+Solucion:        ${solucion}
+--------------------------------------------------
+Registro generado automaticamente - Princess Hotels & Resorts - Central Compras Canarias`;
   }
 
   function generarPdfIncidencia() {

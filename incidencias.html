@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Incidencias · Princess Hotels</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --bg: #0f0d0a;
@@ -446,7 +447,7 @@
 
   <div class="seccion">
     <div class="seccion-titulo">Foto de la incidencia</div>
-    <div class="foto-area" id="fotoArea" onclick="document.getElementById('fFoto').click()">
+    <div class="foto-area" id="fotoArea">
       <input type="file" id="fFoto" accept="image/*" capture="environment" onchange="previsualizarFoto(event)">
       <div class="ico">📷</div>
       <p>Toca para hacer foto o seleccionar imagen</p>
@@ -540,15 +541,15 @@
     'Hotel Princess Taurito':            'centralcompras2.canarias@princess-hotels.com',
     'Hotel TUI Suite Princess':          'centralcompras2.canarias@princess-hotels.com',
 
-    'Hotel Maspalomas Tabaiba Princess': 'centralcompas4.canarias@princess-hotels.com',
-    'Hotel Gran Canaria Princess':       'centralcompas4.canarias@princess-hotels.com',
+    'Hotel Maspalomas Tabaiba Princess': 'centralcompras4.canarias@princess-hotels.com',
+    'Hotel Gran Canaria Princess':       'centralcompras4.canarias@princess-hotels.com',
 
-    'Hotel Guayarmina Princess':         'centralcompas6.canarias@princess-hotels.com',
-    'Hotel Princess Inspire Tenerife':   'centralcompas6.canarias@princess-hotels.com',
-    'Hotel La Palma Princess':           'centralcompas6.canarias@princess-hotels.com',
+    'Hotel Guayarmina Princess':         'centralcompras6.canarias@princess-hotels.com',
+    'Hotel Princess Inspire Tenerife':   'centralcompras6.canarias@princess-hotels.com',
+    'Hotel La Palma Princess':           'centralcompras6.canarias@princess-hotels.com',
 
-    'Hotel Fuerteventura Princess':      'centralcompas3.canarias@princess-hotels.com',
-    'Hotel Club Jandía Princess':        'centralcompas3.canarias@princess-hotels.com'
+    'Hotel Fuerteventura Princess':      'centralcompras3.canarias@princess-hotels.com',
+    'Hotel Club Jandía Princess':        'centralcompras3.canarias@princess-hotels.com'
   };
 
   let nivelRiesgo = 1;
@@ -979,14 +980,116 @@ Registro generado automáticamente · Princess Hotels Canarias`;
 
   function generarPdfIncidencia() {
     const numero = document.getElementById('numRegistro')?.textContent?.trim() || '—';
-    const contenido = construirTextoIncidencia(numero);
-    const blob = new Blob([contenido], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `incidencia_${numero}.pdf`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    const hotel   = document.getElementById('fHotel').value || '-';
+    const dep     = document.getElementById('fDep').value || '-';
+    const fecha   = document.getElementById('fFecha').value || '-';
+    const dali    = document.getElementById('fDali').value.trim() || '-';
+    const prov    = document.getElementById('fProveedor').value.trim() || '-';
+    const sap     = document.getElementById('fSap').value.trim() || '-';
+    const albaran = document.getElementById('fAlbaran').value.trim() || '-';
+    const ref     = document.getElementById('fReferencia').value.trim() || '-';
+    const desc    = document.getElementById('fDesc').value.trim() || '-';
+    const medidas = document.getElementById('fMedidas').value.trim() || '-';
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const gold = [180, 140, 60];
+    const dark = [26, 22, 16];
+    const sub  = [120, 110, 95];
+
+    // Fondo oscuro
+    doc.setFillColor(...dark);
+    doc.rect(0, 0, 210, 297, 'F');
+
+    // Cabecera dorada
+    doc.setFillColor(...gold);
+    doc.rect(0, 0, 210, 28, 'F');
+    doc.setTextColor(26, 22, 16);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INCIDENCIA  #' + numero, 14, 12);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Princess Hotels & Resorts · Central Compras Canarias', 14, 20);
+    doc.setFontSize(8);
+    doc.text('Generado: ' + new Date().toLocaleDateString('es-ES'), 150, 20);
+
+    // Función helpers
+    const seccion = (titulo, y) => {
+      doc.setFillColor(40, 35, 28);
+      doc.rect(10, y, 190, 7, 'F');
+      doc.setTextColor(...gold);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text(titulo, 14, y + 5);
+      return y + 10;
+    };
+    const campo = (label, valor, x, y, w) => {
+      doc.setTextColor(...sub);
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.text(label.toUpperCase(), x, y);
+      doc.setTextColor(230, 225, 215);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const lines = doc.splitTextToSize(String(valor), w || 85);
+      doc.text(lines, x, y + 5);
+      return y + 5 + (lines.length * 4.5);
+    };
+
+    let y = 35;
+
+    // Sección hotel
+    y = seccion('DATOS DEL HOTEL', y);
+    const col1end = campo('Hotel', hotel, 14, y, 85);
+    const col2end = campo('Departamento', dep, 105, y, 85);
+    y = Math.max(col1end, col2end) + 2;
+    campo('Fecha', fecha, 14, y, 85);
+    y += 12;
+
+    // Línea separadora
+    doc.setDrawColor(...gold);
+    doc.setLineWidth(0.3);
+    doc.line(10, y, 200, y);
+    y += 5;
+
+    // Sección proveedor
+    y = seccion('DATOS DEL PROVEEDOR', y);
+    const p1 = campo('Proveedor', prov, 14, y, 85);
+    const p2 = campo('Nº SAP', sap, 105, y, 85);
+    y = Math.max(p1, p2) + 2;
+    const p3 = campo('Albarán / Factura', albaran, 14, y, 85);
+    const p4 = campo('Nº Entrada DALI', dali, 105, y, 85);
+    y = Math.max(p3, p4) + 2;
+    campo('Referencia', ref, 14, y, 180);
+    y += 14;
+
+    doc.line(10, y, 200, y);
+    y += 5;
+
+    // Sección incidencia
+    y = seccion('DESCRIPCIÓN DE LA INCIDENCIA', y);
+    campo('Descripción', desc, 14, y, 180);
+    y += Math.ceil(doc.splitTextToSize(desc, 180).length * 4.5) + 8;
+    campo('Tipo y nivel de riesgo', riesgoTexto(), 14, y, 85);
+    campo('Medidas correctoras', medidas, 105, y, 85);
+    y += Math.max(
+      Math.ceil(doc.splitTextToSize(riesgoTexto(), 85).length * 4.5),
+      Math.ceil(doc.splitTextToSize(medidas, 85).length * 4.5)
+    ) + 10;
+
+    // Pie
+    doc.setFillColor(...gold);
+    doc.rect(0, 285, 210, 12, 'F');
+    doc.setTextColor(26, 22, 16);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Princess Hotels & Resorts · Central Compras Canarias', 14, 292);
+    doc.setFont('helvetica', 'italic');
+    doc.text('by Frankus71', 185, 292, { align: 'right' });
+
+    doc.save(`incidencia_${numero}.pdf`);
   }
 
   function abrirCorreoIncidencia() {

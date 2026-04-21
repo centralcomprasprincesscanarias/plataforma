@@ -1,11 +1,26 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="refresh" content="0; url=hub.html">
   <title>Redirigiendo...</title>
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1510">
 </head>
 <body>
   Redirigiendo a la plataforma...
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function (err) {
+      console.log("SW no registrado:", err);
+    });
+  });
+}
+</script>
 </body>
 </html>
+

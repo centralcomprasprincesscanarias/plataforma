@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -308,6 +308,11 @@
     .card-icon { animation: pulse-glow 3s ease-in-out infinite; }
     .card:nth-child(2) .card-icon { animation-delay: 1.5s; }
   </style>
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1510">
 </head>
 <body>
   <div class="bg-layer"></div>
@@ -402,5 +407,15 @@
   </div>
 
 <a id="btn-admin-hub" href="admin.html" title="Admin" style="position:fixed;bottom:18px;right:18px;width:28px;height:28px;border-radius:50%;background:rgba(176,141,87,0.08);border:1px solid rgba(176,141,87,0.15);opacity:0.35;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:11px;color:#c9a84c;transition:opacity 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.35">⚙</a>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function (err) {
+      console.log("SW no registrado:", err);
+    });
+  });
+}
+</script>
 </body>
 </html>
+

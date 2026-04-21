@@ -1,0 +1,16 @@
+Pon estos archivos en:
+
+\\shtabaiba\Comun$\maspalomas&tabaibac\Compras-Chef\PLATAFORMA PRINCESS
+
+Uso para los usuarios:
+1. Entrar en la carpeta compartida.
+2. Hacer doble clic en:
+   Instalar_Plataforma_Princess_En_Escritorio.bat
+3. Se les creará en el escritorio:
+   Plataforma Princess.lnk
+
+Ese acceso directo abrirá:
+https://centralcomprasprincesscanarias.github.io/plataforma/hub.html
+
+Si solo quieren abrirla sin crear acceso directo:
+- usar Abrir_Plataforma_Princess_Como_App.bat

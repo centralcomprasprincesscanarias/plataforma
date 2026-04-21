@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Incidencias · Princess Hotels</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1314,55 +1316,172 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  function descargarRegistroExcel() {
+  function getImageExtensionFromBase64(base64) {
+    if (!base64 || typeof base64 !== 'string') return 'png';
+    if (base64.startsWith('data:image/png')) return 'png';
+    if (base64.startsWith('data:image/jpeg')) return 'jpeg';
+    if (base64.startsWith('data:image/jpg')) return 'jpeg';
+    if (base64.startsWith('data:image/gif')) return 'gif';
+    return 'png';
+  }
+
+  async function descargarRegistroExcel() {
     const rows = getRegistrosFiltrados();
     if (!rows.length) { toast('No hay registros para descargar','err'); return; }
+    if (!window.ExcelJS || !window.saveAs) {
+      toast('Excel avanzado no disponible','err');
+      return;
+    }
 
-    const htmlExcel = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
-      xmlns:x="urn:schemas-microsoft-com:office:excel"
-      xmlns="http://www.w3.org/TR/REC-html40">
-    <head><meta charset="UTF-8">
-    <style>
-      table{border-collapse:collapse;font-family:Arial,sans-serif}
-      th,td{border:1px solid #999;padding:6px;font-size:11px;vertical-align:middle}
-      th{background:#d9d9d9;font-weight:bold;text-align:center}
-    </style></head>
-    <body><table>
-      <thead><tr>
-        <th>Nº</th><th>Fecha</th><th>Hotel</th><th>Departamento</th>
-        <th>Nº Entrada</th><th>Proveedor</th><th>SAP Proveedor</th>
-        <th>Nº Albarán</th><th>Referencia</th><th>Descripción</th>
-        <th>Nivel Riesgo</th><th>Riesgo</th><th>Medidas Correctoras</th>
-        <th>Solución Proveedor</th><th>Estado</th><th>Foto</th>
-      </tr></thead>
-      <tbody>
-        ${rows.map(r=>`<tr style="height:70pt">
-          <td>${excelSafe(r.numero)}</td>
-          <td>${excelSafe(r.fecha)}</td>
-          <td>${excelSafe(r.hotel)}</td>
-          <td>${excelSafe(r.departamento)}</td>
-          <td>${excelSafe(r.numero_dali)}</td>
-          <td>${excelSafe(r.proveedor)}</td>
-          <td>${excelSafe(r.sap_proveedor)}</td>
-          <td>${excelSafe(r.numero_albaran)}</td>
-          <td>${excelSafe(r.referencia)}</td>
-          <td>${excelSafe(r.descripcion)}</td>
-          <td>${excelSafe(r.nivel_riesgo)}</td>
-          <td>${excelSafe(r.riesgo)}</td>
-          <td>${excelSafe(r.medidas_correctoras)}</td>
-          <td>${excelSafe(r.solucion_proveedor)}</td>
-          <td>${r.cierre ? 'Cerrada' : 'Abierta'}</td>
-          <td style="text-align:center">${(r.fotos_b64 && r.fotos_b64.length)
-            ? r.fotos_b64.map(b=>`<img src="${b}" style="max-width:100px;max-height:75px">`).join('')
-            : ''}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table></body></html>`;
+    const maxFotos = Math.max(1, ...rows.map(r => (r.fotos_b64 && r.fotos_b64.length) ? r.fotos_b64.length : 0));
+
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'Princess Hotels & Resorts';
+    wb.created = new Date();
+
+    const ws = wb.addWorksheet('Incidencias', {
+      views: [{ state:'frozen', ySplit:1 }]
+    });
+
+    const headers = [
+      'Nº','Fecha','Hotel','Departamento','Nº Entrada','Proveedor','SAP Proveedor',
+      'Nº Albarán','Referencia','Descripción','Nivel Riesgo','Riesgo',
+      'Medidas Correctoras','Solución Proveedor','Estado',
+      ...Array.from({length:maxFotos}, (_,i) => `Foto ${i+1}`)
+    ];
+
+    ws.addRow(headers);
+
+    ws.getRow(1).height = 22;
+    ws.getRow(1).font = { bold:true, color:{argb:'FF000000'} };
+    ws.getRow(1).fill = {
+      type:'pattern',
+      pattern:'solid',
+      fgColor:{argb:'FFD9D9D9'}
+    };
+    ws.getRow(1).alignment = { vertical:'middle', horizontal:'center', wrapText:true };
+
+    const widths = [8,14,28,18,14,26,16,16,22,34,12,16,24,22,12];
+    for (let i = 0; i < maxFotos; i++) widths.push(16);
+
+    widths.forEach((w, idx) => {
+      ws.getColumn(idx + 1).width = w;
+    });
+
+    rows.forEach(r => {
+      const row = ws.addRow([
+        r.numero || '',
+        r.fecha || '',
+        r.hotel || '',
+        r.departamento || '',
+        r.numero_dali || '',
+        r.proveedor || '',
+        r.sap_proveedor || '',
+        r.numero_albaran || '',
+        r.referencia || '',
+        r.descripcion || '',
+        r.nivel_riesgo || '',
+        r.riesgo || '',
+        r.medidas_correctoras || '',
+        r.solucion_proveedor || '',
+        r.cierre ? 'Cerrada' : 'Abierta',
+        ...Array.from({length:maxFotos}, () => '')
+      ]);
+
+      row.height = 58;
+      row.alignment = { vertical:'middle', wrapText:true };
+
+      const fotos = Array.isArray(r.fotos_b64) ? r.fotos_b64 : [];
+      fotos.forEach((foto, indexFoto) => {
+        try {
+          const imgId = wb.addImage({
+            base64: foto,
+            extension: getImageExtensionFromBase64(foto)
+          });
+
+          ws.addImage(imgId, {
+            tl: { col: 15 + indexFoto + 0.15, row: row.number - 1 + 0.12 },
+            ext: { width: 85, height: 55 }
+          });
+        } catch (e) {
+          // Si una imagen falla, se deja la celda vacía
+        }
+      });
+    });
+
+    ws.autoFilter = {
+      from: { row:1, column:1 },
+      to: { row:1, column:headers.length }
+    };
+
+    ws.eachRow((row, rowNumber) => {
+      row.eachCell(cell => {
+        cell.border = {
+          top:{style:'thin', color:{argb:'FF999999'}},
+          left:{style:'thin', color:{argb:'FF999999'}},
+          bottom:{style:'thin', color:{argb:'FF999999'}},
+          right:{style:'thin', color:{argb:'FF999999'}}
+        };
+        if (rowNumber > 1) {
+          cell.alignment = { vertical:'middle', wrapText:true };
+        }
+      });
+    });
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob(
+      [buffer],
+      { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+    );
+    saveAs(blob, `incidencias_${new Date().toISOString().slice(0,10)}.xlsx`);
+    toast('Excel descargado con fotos ✓','ok');
+  }
+
+).join('');
+      }
+
+      bodyRows += '<tr style="height:70pt">' +
+        '<td>' + excelSafe(r.numero) + '</td>' +
+        '<td>' + excelSafe(r.fecha) + '</td>' +
+        '<td>' + excelSafe(r.hotel) + '</td>' +
+        '<td>' + excelSafe(r.departamento) + '</td>' +
+        '<td>' + excelSafe(r.numero_dali) + '</td>' +
+        '<td>' + excelSafe(r.proveedor) + '</td>' +
+        '<td>' + excelSafe(r.sap_proveedor) + '</td>' +
+        '<td>' + excelSafe(r.numero_albaran) + '</td>' +
+        '<td>' + excelSafe(r.referencia) + '</td>' +
+        '<td>' + excelSafe(r.descripcion) + '</td>' +
+        '<td>' + excelSafe(r.nivel_riesgo) + '</td>' +
+        '<td>' + excelSafe(r.riesgo) + '</td>' +
+        '<td>' + excelSafe(r.medidas_correctoras) + '</td>' +
+        '<td>' + excelSafe(r.solucion_proveedor) + '</td>' +
+        '<td>' + (r.cierre ? 'Cerrada' : 'Abierta') + '</td>' +
+        '<td style="text-align:center">' + fotos + '</td>' +
+      '</tr>';
+    });
+
+    const htmlExcel =
+      '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+      'xmlns:x="urn:schemas-microsoft-com:office:excel" ' +
+      'xmlns="http://www.w3.org/TR/REC-html40">' +
+      '<head><meta charset="UTF-8">' +
+      '<style>' +
+      'table{border-collapse:collapse;font-family:Arial,sans-serif}' +
+      'th,td{border:1px solid #999;padding:6px;font-size:11px;vertical-align:middle}' +
+      'th{background:#d9d9d9;font-weight:bold;text-align:center}' +
+      '</style></head><body><table>' +
+      '<thead><tr>' +
+      '<th>Nº</th><th>Fecha</th><th>Hotel</th><th>Departamento</th>' +
+      '<th>Nº Entrada</th><th>Proveedor</th><th>SAP Proveedor</th>' +
+      '<th>Nº Albarán</th><th>Referencia</th><th>Descripción</th>' +
+      '<th>Nivel Riesgo</th><th>Riesgo</th><th>Medidas Correctoras</th>' +
+      '<th>Solución Proveedor</th><th>Estado</th><th>Foto</th>' +
+      '</tr></thead><tbody>' + bodyRows + '</tbody></table></body></html>';
 
     const blob = new Blob(['\ufeff', htmlExcel], { type:'application/vnd.ms-excel;charset=utf-8;' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `incidencias_${new Date().toISOString().slice(0,10)}.xls`;
+    a.download = 'incidencias_' + new Date().toISOString().slice(0,10) + '.xls';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

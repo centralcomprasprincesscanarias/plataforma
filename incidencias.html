@@ -443,6 +443,7 @@
     .tabs { padding: 16px 14px 0; }
   }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1362,62 +1363,40 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
   function descargarRegistroExcel() {
     const rows = getRegistrosFiltrados();
     if (!rows.length) { toast('No hay registros para descargar','err'); return; }
+    if (typeof XLSX === 'undefined') {
+      toast('La librería Excel no ha cargado todavía. Recarga la página.','err');
+      return;
+    }
 
-    let bodyRows = '';
-    rows.forEach(function(r) {
-      let fotos = '';
-      if (r.fotos_b64 && r.fotos_b64.length) {
-        fotos = r.fotos_b64.map(function(b) {
-          return '<img src="' + b + '" style="max-width:100px;max-height:75px">';
-        }).join('');
-      }
-
-      bodyRows += '<tr style="height:70pt">' +
-        '<td>' + excelSafe(r.numero) + '</td>' +
-        '<td>' + excelSafe(r.fecha) + '</td>' +
-        '<td>' + excelSafe(r.hotel) + '</td>' +
-        '<td>' + excelSafe(r.departamento) + '</td>' +
-        '<td>' + excelSafe(r.numero_dali) + '</td>' +
-        '<td>' + excelSafe(r.proveedor) + '</td>' +
-        '<td>' + excelSafe(r.sap_proveedor) + '</td>' +
-        '<td>' + excelSafe(r.numero_albaran) + '</td>' +
-        '<td>' + excelSafe(r.referencia) + '</td>' +
-        '<td>' + excelSafe(r.descripcion) + '</td>' +
-        '<td>' + excelSafe(r.nivel_riesgo) + '</td>' +
-        '<td>' + excelSafe(r.riesgo) + '</td>' +
-        '<td>' + excelSafe(r.medidas_correctoras) + '</td>' +
-        '<td>' + excelSafe(r.solucion_proveedor) + '</td>' +
-        '<td>' + (r.cierre ? 'Cerrada' : 'Abierta') + '</td>' +
-        '<td style="text-align:center">' + fotos + '</td>' +
-      '</tr>';
+    const data = rows.map(r => {
+      const out = {
+        'Nº': r.numero || '',
+        'Fecha': r.fecha || '',
+        'Hotel': r.hotel || '',
+        'Departamento': r.departamento || '',
+        'Nº Entrada': r.numero_dali || '',
+        'Proveedor': r.proveedor || '',
+        'SAP Proveedor': r.sap_proveedor || '',
+        'Nº Albarán': r.numero_albaran || '',
+        'Referencia': r.referencia || '',
+        'Descripción': r.descripcion || '',
+        'Nivel Riesgo': r.nivel_riesgo || '',
+        'Riesgo': r.riesgo || '',
+        'Medidas Correctoras': r.medidas_correctoras || '',
+        'Solución Proveedor': r.solucion_proveedor || '',
+        'Estado': r.cierre ? 'Cerrada' : 'Abierta'
+      };
+      const fotos = Array.isArray(r.fotos_b64) ? r.fotos_b64 : [];
+      if (fotos.length) out['Fotos'] = fotos.map((_, i) => `Foto ${i+1}`).join(' | ');
+      return out;
     });
 
-    const htmlExcel =
-      '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
-      'xmlns:x="urn:schemas-microsoft-com:office:excel" ' +
-      'xmlns="http://www.w3.org/TR/REC-html40">' +
-      '<head><meta charset="UTF-8">' +
-      '<style>' +
-      'table{border-collapse:collapse;font-family:Arial,sans-serif}' +
-      'th,td{border:1px solid #999;padding:6px;font-size:11px;vertical-align:middle}' +
-      'th{background:#d9d9d9;font-weight:bold;text-align:center}' +
-      '</style></head><body><table>' +
-      '<thead><tr>' +
-      '<th>Nº</th><th>Fecha</th><th>Hotel</th><th>Departamento</th>' +
-      '<th>Nº Entrada</th><th>Proveedor</th><th>SAP Proveedor</th>' +
-      '<th>Nº Albarán</th><th>Referencia</th><th>Descripción</th>' +
-      '<th>Nivel Riesgo</th><th>Riesgo</th><th>Medidas Correctoras</th>' +
-      '<th>Solución Proveedor</th><th>Estado</th><th>Foto</th>' +
-      '</tr></thead><tbody>' + bodyRows + '</tbody></table></body></html>';
-
-    const blob = new Blob(['\ufeff', htmlExcel], { type:'application/vnd.ms-excel;charset=utf-8;' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'incidencias_' + new Date().toISOString().slice(0,10) + '.xls';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    toast('Excel descargado ✓','ok');
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = Object.keys(data[0] || {}).map(h => ({ wch: Math.max(14, String(h).length + 2) }));
+    XLSX.utils.book_append_sheet(wb, ws, 'Incidencias');
+    XLSX.writeFile(wb, `incidencias_${new Date().toISOString().slice(0,10)}.xlsx`);
+    toast('Excel real descargado ✓','ok');
   }
 
   // ── FOTO MODAL ────────────────────────────────────────────────

@@ -833,6 +833,19 @@
     'Hotel Fuerteventura Princess': '0910'
   };
 
+  const CENTROS_SAP_CANARIAS = {
+    '0110': 'GUAYARMINA PRINCESS',
+    '0120': 'PRINCESS INSPIRE TENERIFE',
+    '0210': 'LA PALMA PRINCESS',
+    '0310': 'TAURITO PRINCESS',
+    '0410': 'SUITE PRINCESS',
+    '0510': 'MOGAN PRINCESS',
+    '0610': 'GRAN CANARIA PRINCESS',
+    '0710': 'MASPALOMAS&TABAIBA PRINCESS',
+    '0810': 'CLUB JANDIA PRINCESS',
+    '0910': 'FUERTEVENTURA PRINCESS'
+  };
+
   const COMPRADORES_WINDOWS = {
     'dcompras': { nombre: 'Jesus Curbelo' },
     'comprascan': { nombre: 'Victor Martin' },
@@ -893,6 +906,51 @@
       .toLowerCase() || 'sin-valor';
   }
 
+  function slugifyPath(value) {
+    return String(value || 'sin-valor')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/&/g, ' Y ')
+      .replace(/[^A-Za-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .replace(/_+/g, '_')
+      .toUpperCase() || 'SIN_VALOR';
+  }
+
+  function getSapHotelByName(hotel) {
+    if (!hotel) return '';
+    if (HOTELES_SAP[hotel]) return HOTELES_SAP[hotel];
+    const key = Object.keys(HOTELES_SAP).find(k => normalizeText(k) === normalizeText(hotel));
+    return key ? HOTELES_SAP[key] : '';
+  }
+
+  function buildPdfStoragePath(numero, hotel, fechaISO) {
+    const sap = getSapHotelByName(hotel) || '0000';
+    const nombreCentro = CENTROS_SAP_CANARIAS[sap] || hotel || 'HOTEL';
+    const carpetaHotel = `${sap}_${slugifyPath(nombreCentro)}`;
+    const fecha = String(fechaISO || hoyISOlocal());
+    const fileName = `incidencia_${String(numero || 0).padStart(4, '0')}_${fecha}.pdf`;
+    return `${carpetaHotel}/ENTRADA/${fileName}`;
+  }
+
+  function parseEmailList(value) {
+    return String(value || '')
+      .split(/[;,]/)
+      .map(v => v.trim())
+      .filter(Boolean)
+      .filter(v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+  }
+
+  function uniqueEmails(list) {
+    const seen = new Set();
+    return list.filter(email => {
+      const key = email.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
   function descargarBlob(blob, fileName) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -920,7 +978,7 @@
       fecha: document.getElementById('fFecha')?.value || '',
       hotel,
       departamento: document.getElementById('fDep')?.value || '',
-      numero_dali: document.getElementById('fDali')?.value.trim() || '',
+      numero_dali: document.getElementById('fDali')?.value.trim() || getSapHotelByName(hotel) || '',
       proveedor: document.getElementById('fProveedor')?.value.trim() || '',
       sap_proveedor: document.getElementById('fSap')?.value.trim() || '',
       numero_albaran: document.getElementById('fAlbaran')?.value.trim() || '',
@@ -986,11 +1044,7 @@
   }
 
   async function guardarIncidenciaSupabase(snapshot, pdfBlob) {
-    const folderDate = (snapshot.fecha || hoyISOlocal()).replaceAll('-', '/');
-    const hotelSlug = slugifyFile(snapshot.hotel || 'sin-hotel');
-    const depSlug = slugifyFile(snapshot.departamento || 'sin-departamento');
-    const numeroTxt = String(snapshot.numero || 0).padStart(4, '0');
-    const storagePath = `${folderDate}/${hotelSlug}/${depSlug}/incidencia_${numeroTxt}.pdf`;
+    const storagePath = buildPdfStoragePath(snapshot.numero, snapshot.hotel, snapshot.fecha || hoyISOlocal());
     const subidaPdf = await subirBlobSupabase(SUPA_BUCKET, storagePath, pdfBlob, 'application/pdf');
 
     const payload = {
@@ -1040,52 +1094,74 @@
 
   function construirTextoCorreoDesdeSnapshot(snapshot = {}, pdfUrl = '') {
     const numero = String(snapshot.numero || '—').padStart(4, '0');
-    let body = `INCIDENCIA DE PROVEEDOR #${numero}
---------------------------------------------------
-DATOS DEL HOTEL
-Hotel:           ${snapshot.hotel || '-'}
-Departamento:    ${snapshot.departamento || '-'}
-Fecha:           ${snapshot.fecha || '-'}
+    const sapHotel = snapshot.numero_dali || getSapHotelByName(snapshot.hotel) || '-';
+    let body = `Buenos días,
 
-DATOS DEL PROVEEDOR
+Se ha registrado una nueva incidencia de proveedor.
+
+Nº incidencia:   ${numero}
+Fecha:           ${snapshot.fecha || '-'}
+Hotel:           ${snapshot.hotel || '-'}
+SAP Hotel:       ${sapHotel}
+Departamento:    ${snapshot.departamento || '-'}
+
 Proveedor:       ${snapshot.proveedor || '-'}
 SAP Proveedor:   ${snapshot.sap_proveedor || '-'}
-Albaran/Factura: ${snapshot.numero_albaran || '-'}
-SAP Hotel:       ${snapshot.numero_dali || '-'}
+Albarán/Factura: ${snapshot.numero_albaran || '-'}
 Referencia:      ${snapshot.referencia || '-'}
 
-DESCRIPCION DE LA INCIDENCIA
-Tipo:            ${snapshot.descripcion || '-'}
+Descripción:     ${snapshot.descripcion || '-'}
 Riesgo:          ${snapshot.riesgo || '-'} - NIVEL ${snapshot.nivel_riesgo ?? '-'}
-Medidas:         ${snapshot.medidas_correctoras || '-'}
-Solucion:        ${snapshot.solucion_proveedor || '-'}
---------------------------------------------------`;
+Medida hotel:    ${snapshot.medidas_correctoras || '-'}
+Solución:        ${snapshot.solucion_proveedor || '-'}
 
-    if (pdfUrl) body += `
-PDF EN SUPABASE:
+El PDF de la incidencia va adjunto en este correo.`;
+
+    if (pdfUrl) {
+      body += `
+
+Enlace Supabase:
 ${pdfUrl}`;
+    }
+
     body += `
 
-Registro generado automaticamente - Princess Hotels & Resorts - Central Compras Canarias`;
+Saludos,
+Central de Compras Canarias
+Princess Hotels & Resorts`;
+
     return body;
   }
 
   async function enviarCorreoIncidenciaGmail(snapshot, pdfUrl = '') {
-    const to = snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel);
-    const cc = snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`;
-    const subject = `Incidencia #${String(snapshot.numero || '—').padStart(4, '0')} · ${snapshot.hotel || 'Sin hotel'} · ${snapshot.departamento || 'Sin departamento'}`;
+    const primaryTo = parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel));
+    const primaryCc = parseEmailList(snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`);
+    const toList = uniqueEmails(primaryTo);
+    const ccList = uniqueEmails(primaryCc.filter(email => !toList.some(to => to.toLowerCase() === email.toLowerCase())));
+
+    if (!toList.length) {
+      throw new Error('No hay destinatario de correo válido para este hotel');
+    }
+
+    const numeroTxt = String(snapshot.numero || '—').padStart(4, '0');
+    const sapHotel = snapshot.numero_dali || getSapHotelByName(snapshot.hotel) || '0000';
+    const hotelTxt = snapshot.hotel || 'Sin hotel';
+    const depTxt = snapshot.departamento || 'Sin departamento';
+    const proveedorTxt = snapshot.proveedor || 'Sin proveedor';
+    const subject = `INCIDENCIA ${numeroTxt} · SAP ${sapHotel} · ${hotelTxt} · ${depTxt} · ${proveedorTxt}`;
     const body = construirTextoCorreoDesdeSnapshot(snapshot, pdfUrl);
+    const pdfFileName = `incidencia_${numeroTxt}_${sapHotel}_${slugifyFile(hotelTxt)}.pdf`;
 
     const res = await fetch(GMAIL_EDGE_FUNCTION, {
       method: 'POST',
       headers: supaHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
-        to,
-        cc,
+        to: toList.join(','),
+        cc: ccList.join(','),
         subject,
         body,
         pdf_url: pdfUrl || null,
-        pdf_filename: `incidencia_${String(snapshot.numero || '0').padStart(4, '0')}.pdf`
+        pdf_filename: pdfFileName
       })
     });
 
@@ -1409,16 +1485,17 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     try {
       btn.textContent = 'Guardando...';
       const numero = await guardarIncidenciaLocal();
-      if (!numero) {
-        btn.disabled = false;
-        btn.textContent = originalTxt;
-        return;
-      }
+      if (!numero) return;
 
       const snapshot = obtenerSnapshotFormulario(numero);
 
       btn.textContent = 'Generando PDF...';
       const pdfResult = await generarPdfIncidencia({ descargar: false, numeroOverride: numero });
+      if (!pdfResult || !pdfResult.blob) throw new Error('No se pudo generar el PDF');
+
+      // Descargar SIEMPRE el PDF aunque luego falle Supabase o Gmail.
+      descargarBlob(pdfResult.blob, pdfResult.fileName);
+      toast('PDF generado ✓', 'ok');
 
       let pdfUrl = '';
       btn.textContent = 'Subiendo a Supabase...';
@@ -1428,17 +1505,21 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
         toast('Incidencia subida a Supabase ✓', 'ok');
       } catch (remoteErr) {
         console.error(remoteErr);
-        toast('No se pudo subir a Supabase. Revisa bucket y policies. Gmail se enviará sin enlace público.', 'err');
+        toast('Registro guardado, pero no se pudo subir el PDF a Supabase.', 'err');
       }
 
       btn.textContent = 'Enviando por Gmail...';
-      await enviarCorreoIncidenciaGmail(snapshot, pdfUrl);
-      descargarBlob(pdfResult.blob, pdfResult.fileName);
-      toast('Correo enviado por Gmail ✓', 'ok');
-      resetForm();
+      try {
+        await enviarCorreoIncidenciaGmail(snapshot, pdfUrl);
+        toast('Correo enviado por Gmail ✓', 'ok');
+        resetForm();
+      } catch (mailErr) {
+        console.error(mailErr);
+        toast('Registro guardado y PDF generado, pero Gmail falló.', 'err');
+      }
     } catch (err) {
       console.error(err);
-      toast('Error al guardar la incidencia', 'err');
+      toast(err?.message || 'Error al guardar la incidencia', 'err');
     } finally {
       btn.disabled = false;
       btn.textContent = originalTxt;
@@ -1485,8 +1566,7 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     const dr      = DESCRIPCION_RIESGO[desc] || ['-','-'];
 
     if (!window.jspdf) {
-      toast('jsPDF no disponible (necesita internet)','err');
-      return;
+      throw new Error('jsPDF no disponible. Recarga la página y comprueba la conexión.');
     }
 
     const fotos = await fotosABase64();

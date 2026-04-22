@@ -576,8 +576,8 @@
   </div>
 
 
-  <button class="btn-enviar" id="btnGuardar" onclick="guardarYRegistrar()">📧 Guardar incidencia, PDF y enviar por Gmail</button>
-  <div style="margin-top:10px;font-size:12px;color:var(--sub);text-align:center">Al guardar se registra la incidencia, se genera el PDF, se sube a Supabase y se envía por Gmail con el PDF adjunto.</div>
+  <button class="btn-enviar" id="btnGuardar" onclick="guardarYRegistrar()">📧 Guardar incidencia, PDF y abrir correo</button>
+  <div style="margin-top:10px;font-size:12px;color:var(--sub);text-align:center">Al guardar se registra la incidencia, se genera y descarga el PDF, y se abre tu cliente de correo corporativo con el correo del comprador asignado ya preparado.</div>
   <div style="display:none;gap:10px;margin-top:10px;flex-wrap:wrap">
     <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="generarPdfIncidencia()">Generar PDF</button>
     <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="abrirCorreoIncidencia()">Enviar por Gmail</button>
@@ -1029,7 +1029,7 @@
       method: 'POST',
       headers: supaHeaders({
         'Content-Type': contentType || blob.type || 'application/octet-stream',
-        'x-upsert': 'true'
+        // 'x-upsert': 'true'
       }),
       body: blob
     });
@@ -1134,15 +1134,17 @@ Referencia:      ${snapshot.referencia || '-'}
 Descripción:     ${snapshot.descripcion || '-'}
 Riesgo:          ${snapshot.riesgo || '-'} - NIVEL ${snapshot.nivel_riesgo ?? '-'}
 Medida hotel:    ${snapshot.medidas_correctoras || '-'}
-Solución:        ${snapshot.solucion_proveedor || '-'}
-
-El PDF de la incidencia va adjunto en este correo.`;
+Solución:        ${snapshot.solucion_proveedor || '-'}`;
 
     if (pdfUrl) {
       body += `
 
-Enlace Supabase:
+📎 Descargar PDF de la incidencia:
 ${pdfUrl}`;
+    } else {
+      body += `
+
+NOTA: El PDF se ha descargado en el equipo. Adjúntalo manualmente antes de enviar.`;
     }
 
     body += `
@@ -1515,33 +1517,25 @@ Princess Hotels & Resorts`;
       if (!pdfResult || !pdfResult.blob) throw new Error('No se pudo generar el PDF');
       descargarBlob(pdfResult.blob, pdfResult.fileName);
 
-      btn.textContent = 'Subiendo PDF a carpeta del hotel...';
-      let remote;
+      btn.textContent = 'Subiendo PDF a Supabase...';
       let pdfUrl = '';
       let pdfPath = '';
       try {
-        remote = await guardarIncidenciaSupabase(snapshot, pdfResult.blob);
+        const remote = await guardarIncidenciaSupabase(snapshot, pdfResult.blob);
         pdfUrl = remote?.pdf?.url || '';
         pdfPath = remote?.pdf?.path || '';
         if (pdfPath) toast(`PDF guardado en: ${pdfPath}`, 'ok');
       } catch (remoteErr) {
-        console.error('Supabase no disponible, se continúa con correo sin enlace:', remoteErr);
-        toast(`Aviso: no se pudo guardar en Supabase (${remoteErr?.message || remoteErr}). Se enviará el correo sin enlace remoto.`, 'err');
-        // No lanzamos error: dejamos pdfUrl vacío y continuamos con el correo
+        console.warn('Supabase no disponible, se continúa sin enlace remoto:', remoteErr);
+        toast(`Aviso: Supabase no disponible. El correo se enviará sin enlace PDF.`, 'err');
       }
 
-      btn.textContent = 'Enviando por Gmail...';
-      try {
-        await enviarCorreoIncidenciaGmail(snapshot, pdfUrl);
-        updateRegistroLocal(numero, { gmail_status: 'enviado' });
-        toast('Correo enviado por Gmail ✓', 'ok');
-        resetForm();
-      } catch (mailErr) {
-        console.error(mailErr);
-        updateRegistroLocal(numero, { gmail_status: 'pendiente_web' });
-        abrirRedaccionGmailWeb(snapshot, pdfUrl);
-        toast(`Gmail automático falló. Se abrió Gmail web. ${mailErr?.message || mailErr}`, 'err');
-      }
+      btn.textContent = 'Abriendo correo corporativo...';
+      abrirMailtoIncidencia(snapshot, pdfUrl);
+      updateRegistroLocal(numero, { gmail_status: 'pendiente_envio' });
+      toast('Correo preparado en tu cliente de correo ✓', 'ok');
+      resetForm();
+
     } catch (err) {
       console.error(err);
       toast(err?.message || 'Error al guardar la incidencia', 'err');
@@ -1549,6 +1543,28 @@ Princess Hotels & Resorts`;
       btn.disabled = false;
       btn.textContent = originalTxt;
     }
+  }
+
+  function abrirMailtoIncidencia(snapshot, pdfUrl = '', pdfFileName = '') {
+    const toList = uniqueEmails(parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel)));
+    const ccList = uniqueEmails(parseEmailList(snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
+      .filter(email => !toList.some(to => to.toLowerCase() === email.toLowerCase()));
+
+    const numeroTxt    = String(snapshot.numero || '—').padStart(4, '0');
+    const sapHotel     = snapshot.numero_dali || getSapHotelByName(snapshot.hotel) || '0000';
+    const hotelTxt     = snapshot.hotel || 'Sin hotel';
+    const depTxt       = snapshot.departamento || 'Sin departamento';
+    const proveedorTxt = snapshot.proveedor || 'Sin proveedor';
+
+    const subject = `INCIDENCIA ${numeroTxt} · SAP ${sapHotel} · ${hotelTxt} · ${depTxt} · ${proveedorTxt}`;
+    const body = construirTextoCorreoDesdeSnapshot(snapshot, pdfUrl);
+
+    const mailto = `mailto:${toList.join(',')}` +
+      `?cc=${encodeURIComponent(ccList.join(','))}` +
+      `&subject=${encodeURIComponent(subject)}` +
+      `&body=${encodeURIComponent(body)}`;
+
+    window.location.href = mailto;
   }
 
   // ── RESET FORM ────────────────────────────────────────────────

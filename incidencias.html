@@ -577,7 +577,6 @@
 
 
   <button class="btn-enviar" id="btnGuardar" onclick="guardarYRegistrar()">📧 Guardar incidencia, PDF y abrir correo</button>
-  <div style="margin-top:10px;font-size:12px;color:var(--sub);text-align:center">Al guardar se registra la incidencia, se genera y descarga el PDF, se sube a Supabase y se abre tu cliente de correo corporativo con el enlace de descarga.</div>
   <div style="margin-top:10px;text-align:center">
     <button type="button" onclick="testConexionSupabase()" style="background:transparent;border:1px dashed var(--border);color:var(--sub);font-family:Outfit,sans-serif;font-size:11px;padding:6px 14px;border-radius:8px;cursor:pointer;">🔌 Probar conexión Supabase</button>
   </div>
@@ -1533,9 +1532,8 @@ Princess Hotels & Resorts`;
         toast('⚠ Supabase: ' + msgErr.slice(0, 120), 'err');
       }
 
-      btn.textContent = 'Abriendo correo corporativo...';
-      abrirMailtoIncidencia(snapshot, pdfUrl);
       updateRegistroLocal(numero, { gmail_status: 'pendiente_envio' });
+      abrirMailtoIncidencia(snapshot, pdfUrl);
       toast('Correo preparado en tu cliente de correo ✓', 'ok');
       resetForm();
 
@@ -1601,7 +1599,12 @@ Princess Hotels & Resorts`;
       + `&subject=${encodeURIComponent(subject)}`
       + `&body=${encodeURIComponent(body)}`;
 
-    window.open(mailto, '_blank', 'noopener');
+    const a = document.createElement('a');
+    a.href = mailto;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 500);
   }
 
   // ── RESET FORM ────────────────────────────────────────────────

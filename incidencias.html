@@ -1029,7 +1029,7 @@
       method: 'POST',
       headers: supaHeaders({
         'Content-Type': contentType || blob.type || 'application/octet-stream',
-        // 'x-upsert': 'true'
+        'x-upsert': 'true'
       }),
       body: blob
     });
@@ -1517,16 +1517,18 @@ Princess Hotels & Resorts`;
 
       btn.textContent = 'Subiendo PDF a carpeta del hotel...';
       let remote;
+      let pdfUrl = '';
+      let pdfPath = '';
       try {
         remote = await guardarIncidenciaSupabase(snapshot, pdfResult.blob);
+        pdfUrl = remote?.pdf?.url || '';
+        pdfPath = remote?.pdf?.path || '';
+        if (pdfPath) toast(`PDF guardado en: ${pdfPath}`, 'ok');
       } catch (remoteErr) {
-        console.error(remoteErr);
-        throw new Error(`No se pudo guardar en Supabase. ${remoteErr?.message || remoteErr}`);
+        console.error('Supabase no disponible, se continúa con correo sin enlace:', remoteErr);
+        toast(`Aviso: no se pudo guardar en Supabase (${remoteErr?.message || remoteErr}). Se enviará el correo sin enlace remoto.`, 'err');
+        // No lanzamos error: dejamos pdfUrl vacío y continuamos con el correo
       }
-
-      const pdfUrl = remote?.pdf?.url || '';
-      const pdfPath = remote?.pdf?.path || '';
-      toast(`PDF guardado en: ${pdfPath}`, 'ok');
 
       btn.textContent = 'Enviando por Gmail...';
       try {

@@ -471,7 +471,7 @@
     <div class="form-grid">
       <div class="form-group">
         <label>Hotel *</label>
-        <select id="fHotel" onchange="actualizarCorreoComprador()">
+        <select id="fHotel" onchange="actualizarHotelDatos()">
           <option value="">Selecciona hotel</option>
           <option>Hotel Maspalomas Tabaiba Princess</option>
           <option>Hotel Gran Canaria Princess</option>
@@ -501,8 +501,8 @@
         <input type="date" id="fFecha">
       </div>
       <div class="form-group">
-        <label>Nº Entrada</label>
-        <input type="text" id="fDali" placeholder="">
+        <label>SAP Hotel</label>
+        <input type="text" id="fDali" placeholder="Se rellena automáticamente" readonly style="opacity:0.6;cursor:not-allowed">
       </div>
       <div class="form-group span2">
         <label>Destinatarios del correo</label>
@@ -626,7 +626,7 @@
           <th>Fecha</th>
           <th>Hotel</th>
           <th>Dpto.</th>
-          <th>DALI</th>
+          <th>SAP Hotel</th>
           <th>Proveedor</th>
           <th>SAP Prov.</th>
           <th>Albarán</th>
@@ -647,7 +647,7 @@
 
 
 <!-- ACCESO CENTRAL DE COMPRAS -->
-<div class="central-acceso">
+<div class="central-acceso" id="centralAccesoCard">
   <div class="central-acceso-head">
     <div>
       <div class="central-acceso-title">Acceso Central de Compras</div>
@@ -816,6 +816,34 @@
     'Hotel Fuerteventura Princess':      'centralcompras3.canarias@princess-hotels.com',
     'Hotel Club Jandía Princess':        'centralcompras3.canarias@princess-hotels.com',
     'Hotel Club Jandia Princess':        'centralcompras3.canarias@princess-hotels.com'
+  };
+
+  const HOTELES_SAP = {
+    'Hotel Guayarmina Princess': '0110',
+    'Hotel Princess Inspire Tenerife': '0120',
+    'Hotel La Palma Princess': '0210',
+    'Hotel Princess Taurito': '0310',
+    'Hotel TUI Suite Princess': '0410',
+    'Hotel Mogán Princess': '0510',
+    'Hotel Mogan Princess': '0510',
+    'Hotel Gran Canaria Princess': '0610',
+    'Hotel Maspalomas Tabaiba Princess': '0710',
+    'Hotel Club Jandía Princess': '0810',
+    'Hotel Club Jandia Princess': '0810',
+    'Hotel Fuerteventura Princess': '0910'
+  };
+
+  const COMPRADORES_WINDOWS = {
+    'dcompras': { nombre: 'Jesus Curbelo' },
+    'comprascan': { nombre: 'Victor Martin' },
+    'comprascan2': { nombre: 'Said Driss' },
+    'comprascan3': { nombre: 'David Rodriguez' },
+    'comprascan4': { nombre: 'Fran Gonzalez' },
+    'comprascan6': { nombre: 'Maria Cruz' }
+  };
+
+  const COMPRADORES_PC = {
+    // Si luego me pasas los identificadores exactos de equipo, se añaden aquí.
   };
 
   function normalizeText(v) {
@@ -1023,7 +1051,7 @@ DATOS DEL PROVEEDOR
 Proveedor:       ${snapshot.proveedor || '-'}
 SAP Proveedor:   ${snapshot.sap_proveedor || '-'}
 Albaran/Factura: ${snapshot.numero_albaran || '-'}
-Nº Entrada:      ${snapshot.numero_dali || '-'}
+SAP Hotel:       ${snapshot.numero_dali || '-'}
 Referencia:      ${snapshot.referencia || '-'}
 
 DESCRIPCION DE LA INCIDENCIA
@@ -1113,7 +1141,21 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     if (tab==='registro') cargarRegistro();
   }
 
-  // ── HOTEL → EMAIL ─────────────────────────────────────────────
+  // ── HOTEL → SAP / EMAIL ───────────────────────────────────────
+  function getHotelSapByHotel(hotel) {
+    if (!hotel) return '';
+    if (HOTELES_SAP[hotel]) return HOTELES_SAP[hotel];
+    const key = Object.keys(HOTELES_SAP).find(k => normalizeText(k) === normalizeText(hotel));
+    return key ? HOTELES_SAP[key] : '';
+  }
+
+  function actualizarHotelSap() {
+    const hotel = document.getElementById('fHotel')?.value || '';
+    const elSap = document.getElementById('fDali');
+    if (!elSap) return;
+    elSap.value = getHotelSapByHotel(hotel);
+  }
+
   function actualizarCorreoComprador() {
     const hotel = document.getElementById('fHotel')?.value || '';
     const el = document.getElementById('fCorreoComprador');
@@ -1129,6 +1171,59 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     }
     const key = Object.keys(EMAIL_COMPRADOR).find(k => normalizeText(k) === normalizeText(hotel));
     el.textContent = key ? EMAIL_COMPRADOR[key] : ADMIN_EMAIL;
+  }
+
+  function actualizarHotelDatos() {
+    actualizarHotelSap();
+    actualizarCorreoComprador();
+  }
+
+  function detectarCompradorCentral() {
+    const candidatosUsuario = [
+      new URLSearchParams(location.search).get('winuser'),
+      new URLSearchParams(location.search).get('user'),
+      sessionStorage.getItem('princess_windows_user'),
+      localStorage.getItem('princess_windows_user'),
+      window.PRINCESS_WINDOWS_USER
+    ];
+
+    try {
+      if (window.AndroidPrincess && typeof window.AndroidPrincess.getWindowsUser === 'function') {
+        candidatosUsuario.push(window.AndroidPrincess.getWindowsUser());
+      }
+    } catch (_) {}
+
+    const candidatosPc = [
+      new URLSearchParams(location.search).get('pc'),
+      sessionStorage.getItem('princess_device_id'),
+      localStorage.getItem('princess_device_id'),
+      window.PRINCESS_DEVICE_ID
+    ];
+
+    const usuario = candidatosUsuario.map(v => normalizeText(v)).find(v => v && COMPRADORES_WINDOWS[v]);
+    if (usuario) return { via: 'usuario', key: usuario, nombre: COMPRADORES_WINDOWS[usuario].nombre };
+
+    const pc = candidatosPc.map(v => normalizeText(v)).find(v => v && COMPRADORES_PC[v]);
+    if (pc) return { via: 'pc', key: pc, nombre: COMPRADORES_PC[pc].nombre };
+
+    return null;
+  }
+
+  function abrirCentralAutomaticamente(info) {
+    sessionStorage.setItem('central_compras_ok', '1');
+    if (info?.key) sessionStorage.setItem('central_compras_user', info.key);
+    const wrap = document.getElementById('centralWrap');
+    if (wrap) wrap.classList.add('open');
+    const btnCerrar = document.getElementById('btnCerrarCentral');
+    if (btnCerrar) btnCerrar.style.display = 'inline-flex';
+    const card = document.getElementById('centralAccesoCard');
+    if (card) card.style.display = 'none';
+    cargarCentralCompras();
+    irCentralTab('hoteles');
+    setTimeout(() => {
+      wrap?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (info?.nombre) toast(`Central de Compras · ${info.nombre}`, 'ok');
+    }, 120);
   }
 
   // ── DESCRIPCIÓN → RIESGO AUTOMÁTICO ──────────────────────────
@@ -1490,7 +1585,7 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
     campo('Proveedor:', prov);
     campo('Nº SAP Proveedor:', sap);
     campo('Nº Albarán / Factura:', albaran);
-    campo('Nº Entrada:', dali);
+    campo('SAP Hotel:', dali);
     campo('Referencia:', ref);
 
     y += 2;
@@ -1618,7 +1713,7 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
         'Fecha': r.fecha || '',
         'Hotel': r.hotel || '',
         'Departamento': r.departamento || '',
-        'Nº Entrada': r.numero_dali || '',
+        'SAP Hotel': r.numero_dali || '',
         'Proveedor': r.proveedor || '',
         'SAP Proveedor': r.sap_proveedor || '',
         'Nº Albarán': r.numero_albaran || '',
@@ -1822,6 +1917,15 @@ document.addEventListener('DOMContentLoaded', function(){
   if(p){
     p.addEventListener('keydown', function(e){ if(e.key === 'Enter') accederCentral(); });
   }
+
+  actualizarHotelDatos();
+
+  const compradorAuto = detectarCompradorCentral();
+  if (compradorAuto) {
+    abrirCentralAutomaticamente(compradorAuto);
+    return;
+  }
+
   if(sessionStorage.getItem('central_compras_ok') === '1'){
     document.getElementById('centralWrap').classList.add('open');
     const btnCerrar = document.getElementById('btnCerrarCentral'); if (btnCerrar) btnCerrar.style.display = 'inline-flex';

@@ -512,7 +512,7 @@
             <span id="fCorreoComprador" style="color:var(--gold2)">— Selecciona un hotel —</span>
           </div>
           <div style="margin-bottom:4px;display:flex;align-items:baseline;gap:8px">
-            <span style="color:var(--sub);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;width:28px;flex-shrink:0">CC:</span>
+            <span style="color:var(--sub);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;width:28px;flex-shrink:0">CCO:</span>
             <span style="color:var(--sub);font-size:12px">centralcomprascanarias.princess@gmail.com &nbsp;·&nbsp; directorcompras.canarias@princess-hotels.com</span>
           </div>
         </div>
@@ -953,7 +953,7 @@
 
   function abrirRedaccionGmailWeb(snapshot, pdfUrl = '') {
     const toList = uniqueEmails(parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel)));
-    const ccList = uniqueEmails(parseEmailList(snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
+    const bccList = uniqueEmails(parseEmailList(snapshot.correo_cco || snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
       .filter(email => !toList.some(to => to.toLowerCase() === email.toLowerCase()));
     const numeroTxt = String(snapshot.numero || '—').padStart(4, '0');
     const sapHotel = snapshot.numero_dali || getSapHotelByName(snapshot.hotel) || '0000';
@@ -966,7 +966,7 @@
     url.searchParams.set('view', 'cm');
     url.searchParams.set('fs', '1');
     url.searchParams.set('to', toList.join(','));
-    if (ccList.length) url.searchParams.set('cc', ccList.join(','));
+    if (bccList.length) url.searchParams.set('bcc', bccList.join(','));
     url.searchParams.set('su', subject);
     url.searchParams.set('body', body);
     window.open(url.toString(), '_blank', 'noopener');
@@ -1010,7 +1010,7 @@
       medidas_correctoras: document.getElementById('fMedidas')?.value.trim() || '',
       solucion_proveedor: document.getElementById('fSolucion')?.value.trim() || '',
       correo_para: getCorreoCompradorPorHotel(hotel),
-      correo_cc: `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`,
+      correo_cco: `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`,
       cierre: 0,
       created_at: new Date().toISOString()
     };
@@ -1093,7 +1093,7 @@
       pdf_path: subidaPdf?.path || null,
       pdf_url: subidaPdf?.url || null,
       correo_para: snapshot.correo_para || null,
-      correo_cc: snapshot.correo_cc || null,
+      correo_cco: snapshot.correo_cco || snapshot.correo_cc || null,
       gmail_status: 'pendiente',
       created_at: snapshot.created_at || new Date().toISOString()
     };
@@ -1187,9 +1187,9 @@ Princess Hotels & Resorts`;
 
   async function enviarCorreoIncidenciaGmail(snapshot, pdfUrl = '') {
     const primaryTo = parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel));
-    const primaryCc = parseEmailList(snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`);
+    const primaryBcc = parseEmailList(snapshot.correo_cco || snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`);
     const toList = uniqueEmails(primaryTo);
-    const ccList = uniqueEmails(primaryCc.filter(email => !toList.some(to => to.toLowerCase() === email.toLowerCase())));
+    const bccList = uniqueEmails(primaryBcc.filter(email => !toList.some(to => to.toLowerCase() === email.toLowerCase())));
 
     if (!toList.length) {
       throw new Error('No hay destinatario de correo válido para este hotel');
@@ -1209,7 +1209,7 @@ Princess Hotels & Resorts`;
       headers: supaHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         to: toList.join(','),
-        cc: ccList.join(','),
+        bcc: bccList.join(','),
         subject,
         body,
         pdf_url: pdfUrl || null,
@@ -1636,7 +1636,7 @@ Princess Hotels & Resorts`;
   // ── MAILTO CORPORATIVO ───────────────────────────────────────
   function abrirMailtoIncidencia(snapshot, pdfUrl = '') {
     const toList = uniqueEmails(parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel)));
-    const ccList = uniqueEmails(parseEmailList(snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
+    const bccList = uniqueEmails(parseEmailList(snapshot.correo_cco || snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
       .filter(email => !toList.some(to => to.toLowerCase() === email.toLowerCase()));
 
     const numeroTxt    = String(snapshot.numero || '—').padStart(4, '0');
@@ -1649,7 +1649,7 @@ Princess Hotels & Resorts`;
 
     let mailto = `mailto:${encodeURIComponent(toList.join(','))}`;
     const params = [];
-    if (ccList.length) params.push(`cc=${encodeURIComponent(ccList.join(','))}`);
+    if (bccList.length) params.push(`bcc=${encodeURIComponent(bccList.join(','))}`);
     params.push(`subject=${encodeURIComponent(subject)}`);
     params.push(`body=${encodeURIComponent(body)}`);
     if (params.length) mailto += `?${params.join('&')}`;

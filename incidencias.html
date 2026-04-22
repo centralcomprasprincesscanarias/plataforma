@@ -951,6 +951,27 @@
     });
   }
 
+  function abrirRedaccionGmailWeb(snapshot, pdfUrl = '') {
+    const toList = uniqueEmails(parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel)));
+    const ccList = uniqueEmails(parseEmailList(snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
+      .filter(email => !toList.some(to => to.toLowerCase() === email.toLowerCase()));
+    const numeroTxt = String(snapshot.numero || '—').padStart(4, '0');
+    const sapHotel = snapshot.numero_dali || getSapHotelByName(snapshot.hotel) || '0000';
+    const hotelTxt = snapshot.hotel || 'Sin hotel';
+    const depTxt = snapshot.departamento || 'Sin departamento';
+    const proveedorTxt = snapshot.proveedor || 'Sin proveedor';
+    const subject = `INCIDENCIA ${numeroTxt} · SAP ${sapHotel} · ${hotelTxt} · ${depTxt} · ${proveedorTxt}`;
+    const body = construirTextoCorreoDesdeSnapshot(snapshot, pdfUrl) + `\n\nNOTA: Se abrió Gmail web como respaldo.`;
+    const url = new URL('https://mail.google.com/mail/');
+    url.searchParams.set('view', 'cm');
+    url.searchParams.set('fs', '1');
+    url.searchParams.set('to', toList.join(','));
+    if (ccList.length) url.searchParams.set('cc', ccList.join(','));
+    url.searchParams.set('su', subject);
+    url.searchParams.set('body', body);
+    window.open(url.toString(), '_blank', 'noopener');
+  }
+
   function descargarBlob(blob, fileName) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1483,7 +1504,7 @@ Princess Hotels & Resorts`;
     btn.disabled = true;
 
     try {
-      btn.textContent = 'Guardando...';
+      btn.textContent = 'Guardando local...';
       const numero = await guardarIncidenciaLocal();
       if (!numero) return;
 
@@ -1492,30 +1513,32 @@ Princess Hotels & Resorts`;
       btn.textContent = 'Generando PDF...';
       const pdfResult = await generarPdfIncidencia({ descargar: false, numeroOverride: numero });
       if (!pdfResult || !pdfResult.blob) throw new Error('No se pudo generar el PDF');
-
-      // Descargar SIEMPRE el PDF aunque luego falle Supabase o Gmail.
       descargarBlob(pdfResult.blob, pdfResult.fileName);
-      toast('PDF generado ✓', 'ok');
 
-      let pdfUrl = '';
-      btn.textContent = 'Subiendo a Supabase...';
+      btn.textContent = 'Subiendo PDF a carpeta del hotel...';
+      let remote;
       try {
-        const remote = await guardarIncidenciaSupabase(snapshot, pdfResult.blob);
-        pdfUrl = remote?.pdf?.url || '';
-        toast('Incidencia subida a Supabase ✓', 'ok');
+        remote = await guardarIncidenciaSupabase(snapshot, pdfResult.blob);
       } catch (remoteErr) {
         console.error(remoteErr);
-        toast('Registro guardado, pero no se pudo subir el PDF a Supabase.', 'err');
+        throw new Error(`No se pudo guardar en Supabase. ${remoteErr?.message || remoteErr}`);
       }
+
+      const pdfUrl = remote?.pdf?.url || '';
+      const pdfPath = remote?.pdf?.path || '';
+      toast(`PDF guardado en: ${pdfPath}`, 'ok');
 
       btn.textContent = 'Enviando por Gmail...';
       try {
         await enviarCorreoIncidenciaGmail(snapshot, pdfUrl);
+        updateRegistroLocal(numero, { gmail_status: 'enviado' });
         toast('Correo enviado por Gmail ✓', 'ok');
         resetForm();
       } catch (mailErr) {
         console.error(mailErr);
-        toast('Registro guardado y PDF generado, pero Gmail falló.', 'err');
+        updateRegistroLocal(numero, { gmail_status: 'pendiente_web' });
+        abrirRedaccionGmailWeb(snapshot, pdfUrl);
+        toast(`Gmail automático falló. Se abrió Gmail web. ${mailErr?.message || mailErr}`, 'err');
       }
     } catch (err) {
       console.error(err);

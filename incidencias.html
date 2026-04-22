@@ -509,13 +509,6 @@
 </head>
 <body>
 
-<!-- PANTALLA DE IDENTIFICACIÓN (solo primera vez por PC) -->
-<div id="loginOverlay" class="oculto">
-  <div class="login-logo">🏨</div>
-  <div class="login-titulo">¿Quién eres?</div>
-  <div class="login-sub">Selecciona tu nombre. Este ordenador te recordará siempre.</div>
-  <div class="login-grid" id="loginGrid"></div>
-</div>
 
 <div class="header">
   <div class="header-left">
@@ -2184,13 +2177,24 @@ function accederCentral(){
   const val = document.getElementById('centralPassword').value;
   const msg = document.getElementById('centralMsg');
   if(val === CENTRAL_PASSWORD){
-    sessionStorage.setItem('central_compras_ok', '1');
-    document.getElementById('centralWrap').classList.add('open');
-    const btnCerrar = document.getElementById('btnCerrarCentral'); if (btnCerrar) btnCerrar.style.display = 'inline-flex';
-    msg.style.color = 'var(--green)';
-    msg.textContent = 'Acceso concedido a Central de Compras.';
-    cargarCentralCompras();
-    setTimeout(() => document.getElementById('centralWrap').scrollIntoView({behavior:'smooth', block:'start'}), 150);
+    // Contraseña correcta — comprobar si ya está identificado
+    const userGuardado = localStorage.getItem(LS_USER_KEY) || sessionStorage.getItem(LS_USER_KEY);
+    if (userGuardado && COMPRADORES_WINDOWS[normalizeText(userGuardado)]) {
+      // Ya identificado → abrir directamente
+      sessionStorage.setItem('central_compras_ok', '1');
+      document.getElementById('centralWrap').classList.add('open');
+      const btnCerrar = document.getElementById('btnCerrarCentral'); if (btnCerrar) btnCerrar.style.display = 'inline-flex';
+      msg.style.color = 'var(--green)';
+      msg.textContent = 'Acceso concedido · ' + COMPRADORES_WINDOWS[normalizeText(userGuardado)].nombre;
+      mostrarUserBadge();
+      cargarCentralCompras();
+      setTimeout(() => document.getElementById('centralWrap').scrollIntoView({behavior:'smooth', block:'start'}), 150);
+    } else {
+      // No identificado → mostrar selector de persona
+      msg.style.color = 'var(--green)';
+      msg.textContent = 'Contraseña correcta. Selecciona tu nombre abajo.';
+      mostrarSelectorComprador();
+    }
   } else {
     msg.style.color = 'var(--red)';
     msg.textContent = 'Contraseña incorrecta.';
@@ -2198,10 +2202,71 @@ function accederCentral(){
 }
 function cerrarCentral(){
   sessionStorage.removeItem('central_compras_ok');
+  sessionStorage.removeItem(LS_USER_KEY);
   document.getElementById('centralWrap').classList.remove('open');
   const btnCerrar = document.getElementById('btnCerrarCentral'); if (btnCerrar) btnCerrar.style.display = 'none';
   document.getElementById('centralPassword').value = '';
   document.getElementById('centralMsg').textContent = '';
+  // Ocultar selector si estaba visible
+  const sel = document.getElementById('selectorCompradorWrap');
+  if (sel) sel.style.display = 'none';
+  mostrarUserBadge();
+}
+
+function mostrarSelectorComprador() {
+  let sel = document.getElementById('selectorCompradorWrap');
+  if (!sel) {
+    sel = document.createElement('div');
+    sel.id = 'selectorCompradorWrap';
+    sel.style.cssText = 'margin-top:16px;';
+    sel.innerHTML = `
+      <div style="font-size:13px;font-weight:600;color:var(--sub);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;">¿Quién accede?</div>
+      <div id="selectorCompradorGrid" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    `;
+    document.getElementById('centralMsg').insertAdjacentElement('afterend', sel);
+  }
+  sel.style.display = 'block';
+
+  const compradores = [
+    { key: 'dcompras',    nombre: 'Jesus Curbelo',  rol: 'Coordinador' },
+    { key: 'comprascan1', nombre: 'Victor Martin',   rol: 'Compras'     },
+    { key: 'comprascan2', nombre: 'Said Driss',      rol: 'Compras'     },
+    { key: 'comprascan3', nombre: 'David Rodriguez', rol: 'Compras'     },
+    { key: 'comprascan4', nombre: 'Fran Gonzalez',   rol: 'Compras'     },
+    { key: 'comprascan6', nombre: 'Maria Cruz',      rol: 'Compras'     },
+  ];
+
+  document.getElementById('selectorCompradorGrid').innerHTML = compradores.map(c => `
+    <button type="button"
+      onclick="confirmarCompradorYAbrir('${c.key}','${c.nombre}')"
+      style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-family:Outfit,sans-serif;cursor:pointer;text-align:left;transition:all .2s"
+      onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:14px;font-weight:700;color:var(--text)">${c.nombre}</div>
+      <div style="font-size:11px;color:var(--sub);margin-top:2px">${c.rol}</div>
+    </button>
+  `).join('');
+}
+
+function confirmarCompradorYAbrir(key, nombre) {
+  localStorage.setItem(LS_USER_KEY, key);
+  sessionStorage.setItem(LS_USER_KEY, key);
+  sessionStorage.setItem('central_compras_ok', '1');
+
+  const sel = document.getElementById('selectorCompradorWrap');
+  if (sel) sel.style.display = 'none';
+
+  const msg = document.getElementById('centralMsg');
+  msg.style.color = 'var(--green)';
+  msg.textContent = 'Acceso concedido · ' + nombre;
+
+  document.getElementById('centralWrap').classList.add('open');
+  const btnCerrar = document.getElementById('btnCerrarCentral');
+  if (btnCerrar) btnCerrar.style.display = 'inline-flex';
+
+  mostrarUserBadge();
+  cargarCentralCompras();
+  setTimeout(() => document.getElementById('centralWrap').scrollIntoView({behavior:'smooth', block:'start'}), 150);
+  if (typeof toast === 'function') toast('Bienvenido/a, ' + nombre + ' ✓', 'ok');
 }
 function irCentralTab(tab){
   document.querySelectorAll('.central-tab').forEach(b => b.classList.toggle('activa', b.dataset.tabc === tab));
@@ -2313,7 +2378,6 @@ document.addEventListener('DOMContentLoaded', function(){
     p.addEventListener('keydown', function(e){ if(e.key === 'Enter') accederCentral(); });
   }
 
-  iniciarIdentificacion();
   actualizarHotelDatos();
 
   const compradorAuto = detectarCompradorCentral();

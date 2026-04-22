@@ -577,7 +577,7 @@
 
 
   <button class="btn-enviar" id="btnGuardar" onclick="guardarYRegistrar()">📧 Guardar incidencia, PDF y abrir correo</button>
-  <div style="margin-top:10px;font-size:12px;color:var(--sub);text-align:center">Al guardar se registra la incidencia, se genera y descarga el PDF, y se abre tu cliente de correo corporativo con el correo del comprador asignado ya preparado.</div>
+  <div style="margin-top:10px;font-size:12px;color:var(--sub);text-align:center">Al guardar se registra la incidencia, se genera y descarga el PDF, se sube a Supabase y se abre tu cliente de correo corporativo con el enlace de descarga.</div>
   <div style="display:none;gap:10px;margin-top:10px;flex-wrap:wrap">
     <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="generarPdfIncidencia()">Generar PDF</button>
     <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="abrirCorreoIncidencia()">Enviar por Gmail</button>
@@ -1025,24 +1025,23 @@
   }
 
   async function subirBlobSupabase(bucket, path, blob, contentType) {
-    const res = await fetch(`${SUPA_URL}/storage/v1/object/${bucket}/${encodeStoragePath(path)}`, {
-      method: 'POST',
-      headers: supaHeaders({
-        'Content-Type': contentType || blob.type || 'application/octet-stream',
-        // 'x-upsert': 'true'
-      }),
-      body: blob
+    const url  = `${SUPA_URL}/storage/v1/object/${bucket}/${encodeStoragePath(path)}`;
+    const hdrs = supaHeaders({
+      'Content-Type': contentType || blob.type || 'application/octet-stream',
+      'x-upsert': 'true'
     });
-
+    // Intentar POST primero; si falla, reintentar con PUT
+    let res = await fetch(url, { method: 'POST', headers: hdrs, body: blob });
     if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      throw new Error(`Storage ${bucket}: ${res.status} ${txt}`);
+      const t1 = await res.text().catch(() => '');
+      console.warn(`Supabase POST ${res.status}: ${t1} — reintentando con PUT...`);
+      res = await fetch(url, { method: 'PUT', headers: hdrs, body: blob });
     }
-
-    return {
-      path,
-      url: buildPublicStorageUrl(bucket, path)
-    };
+    if (!res.ok) {
+      const t2 = await res.text().catch(() => '');
+      throw new Error(`Storage ${bucket}: ${res.status} – ${t2}`);
+    }
+    return { path, url: buildPublicStorageUrl(bucket, path) };
   }
 
   async function insertarIncidenciaSupabase(payload) {
@@ -1134,7 +1133,9 @@ Referencia:      ${snapshot.referencia || '-'}
 Descripción:     ${snapshot.descripcion || '-'}
 Riesgo:          ${snapshot.riesgo || '-'} - NIVEL ${snapshot.nivel_riesgo ?? '-'}
 Medida hotel:    ${snapshot.medidas_correctoras || '-'}
-Solución:        ${snapshot.solucion_proveedor || '-'}`;
+Solución:        ${snapshot.solucion_proveedor || '-'}
+
+`;
 
     if (pdfUrl) {
       body += `
@@ -1519,15 +1520,13 @@ Princess Hotels & Resorts`;
 
       btn.textContent = 'Subiendo PDF a Supabase...';
       let pdfUrl = '';
-      let pdfPath = '';
       try {
         const remote = await guardarIncidenciaSupabase(snapshot, pdfResult.blob);
         pdfUrl = remote?.pdf?.url || '';
-        pdfPath = remote?.pdf?.path || '';
-        if (pdfPath) toast(`PDF guardado en: ${pdfPath}`, 'ok');
+        if (pdfUrl) toast('PDF subido correctamente ✓', 'ok');
       } catch (remoteErr) {
-        console.warn('Supabase no disponible, se continúa sin enlace remoto:', remoteErr);
-        toast(`Aviso: Supabase no disponible. El correo se enviará sin enlace PDF.`, 'err');
+        console.warn('Supabase no disponible:', remoteErr);
+        toast('Aviso: no se pudo subir a Supabase. El correo irá sin enlace de descarga.', 'err');
       }
 
       btn.textContent = 'Abriendo correo corporativo...';
@@ -1545,9 +1544,10 @@ Princess Hotels & Resorts`;
     }
   }
 
-  function abrirMailtoIncidencia(snapshot, pdfUrl = '', pdfFileName = '') {
-    const toList = uniqueEmails(parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel)));
-    const ccList = uniqueEmails(parseEmailList(snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
+  // ── MAILTO CORPORATIVO ───────────────────────────────────────
+  function abrirMailtoIncidencia(snapshot, pdfUrl = '') {
+    const toList  = uniqueEmails(parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel)));
+    const bccList = uniqueEmails(parseEmailList(snapshot.correo_cc  || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
       .filter(email => !toList.some(to => to.toLowerCase() === email.toLowerCase()));
 
     const numeroTxt    = String(snapshot.numero || '—').padStart(4, '0');
@@ -1555,14 +1555,13 @@ Princess Hotels & Resorts`;
     const hotelTxt     = snapshot.hotel || 'Sin hotel';
     const depTxt       = snapshot.departamento || 'Sin departamento';
     const proveedorTxt = snapshot.proveedor || 'Sin proveedor';
+    const subject      = `INCIDENCIA ${numeroTxt} · SAP ${sapHotel} · ${hotelTxt} · ${depTxt} · ${proveedorTxt}`;
+    const body         = construirTextoCorreoDesdeSnapshot(snapshot, pdfUrl);
 
-    const subject = `INCIDENCIA ${numeroTxt} · SAP ${sapHotel} · ${hotelTxt} · ${depTxt} · ${proveedorTxt}`;
-    const body = construirTextoCorreoDesdeSnapshot(snapshot, pdfUrl);
-
-    const mailto = `mailto:${toList.join(',')}` +
-      `?cc=${encodeURIComponent(ccList.join(','))}` +
-      `&subject=${encodeURIComponent(subject)}` +
-      `&body=${encodeURIComponent(body)}`;
+    const mailto = `mailto:${toList.join(',')}`
+      + `?bcc=${encodeURIComponent(bccList.join(','))}`
+      + `&subject=${encodeURIComponent(subject)}`
+      + `&body=${encodeURIComponent(body)}`;
 
     window.location.href = mailto;
   }
@@ -1761,19 +1760,30 @@ Princess Hotels & Resorts`;
   async function cargarRegistro() {
     const hotel = document.getElementById('filtHotel').value;
     const dep   = document.getElementById('filtDep').value;
-    let datos = [];
 
-    try {
-      datos = await cargarRegistrosSupabase();
-    } catch (e) {
-      console.warn('No se pudieron leer incidencias de Supabase; se usa localStorage.', e);
-      datos = getRegistrosLocal();
-    }
-
+    // Mostrar local inmediatamente (siempre disponible)
+    let local = getRegistrosLocal();
+    let datos = local.slice();
     if (hotel) datos = datos.filter(r => r.hotel === hotel);
     if (dep)   datos = datos.filter(r => r.departamento === dep);
     todosRegistros = datos;
     filtrarTabla();
+
+    // Enriquecer con Supabase si está disponible
+    try {
+      const remoto = await cargarRegistrosSupabase();
+      if (remoto && remoto.length) {
+        const numerosRemoto = new Set(remoto.map(r => Number(r.numero)));
+        const soloLocal = local.filter(r => !numerosRemoto.has(Number(r.numero)));
+        let combinado = [...remoto, ...soloLocal].sort((a, b) => Number(b.numero) - Number(a.numero));
+        if (hotel) combinado = combinado.filter(r => r.hotel === hotel);
+        if (dep)   combinado = combinado.filter(r => r.departamento === dep);
+        todosRegistros = combinado;
+        filtrarTabla();
+      }
+    } catch (e) {
+      console.warn('Supabase no disponible; mostrando solo datos locales.', e);
+    }
   }
 
   function getRegistrosFiltrados() {

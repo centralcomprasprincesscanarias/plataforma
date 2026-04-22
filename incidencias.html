@@ -578,6 +578,9 @@
 
   <button class="btn-enviar" id="btnGuardar" onclick="guardarYRegistrar()">📧 Guardar incidencia, PDF y abrir correo</button>
   <div style="margin-top:10px;font-size:12px;color:var(--sub);text-align:center">Al guardar se registra la incidencia, se genera y descarga el PDF, se sube a Supabase y se abre tu cliente de correo corporativo con el enlace de descarga.</div>
+  <div style="margin-top:10px;text-align:center">
+    <button type="button" onclick="testConexionSupabase()" style="background:transparent;border:1px dashed var(--border);color:var(--sub);font-family:Outfit,sans-serif;font-size:11px;padding:6px 14px;border-radius:8px;cursor:pointer;">🔌 Probar conexión Supabase</button>
+  </div>
   <div style="display:none;gap:10px;margin-top:10px;flex-wrap:wrap">
     <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="generarPdfIncidencia()">Generar PDF</button>
     <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="abrirCorreoIncidencia()">Enviar por Gmail</button>
@@ -797,7 +800,7 @@
   const SUPA_URL    = 'https://ifiwuloipapsezmssyda.supabase.co';
   const SUPA_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmaXd1bG9pcGFwc2V6bXNzeWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDA5NDgsImV4cCI6MjA5MTM3Njk0OH0.Wjs298hA8xAnIQ4IQHEq3eEfaygF-6FY_5I4i2Se3ZY';
   const SUPA_TABLE  = 'incidencias';
-  const SUPA_BUCKET = 'incidencias';
+  const SUPA_BUCKET = 'incidencias-pdf';
   const GMAIL_EDGE_FUNCTION = `${SUPA_URL}/functions/v1/send-gmail-incidencia`;
     const ADMIN_EMAIL    = 'centralcomprascanarias.princess@gmail.com';
   const DIRECTOR_EMAIL = 'directorcompras.canarias@princess-hotels.com';
@@ -1523,10 +1526,11 @@ Princess Hotels & Resorts`;
       try {
         const remote = await guardarIncidenciaSupabase(snapshot, pdfResult.blob);
         pdfUrl = remote?.pdf?.url || '';
-        if (pdfUrl) toast('PDF subido correctamente ✓', 'ok');
+        if (pdfUrl) toast('PDF subido a Supabase ✓', 'ok');
       } catch (remoteErr) {
-        console.warn('Supabase no disponible:', remoteErr);
-        toast('Aviso: no se pudo subir a Supabase. El correo irá sin enlace de descarga.', 'err');
+        const msgErr = remoteErr?.message || String(remoteErr);
+        console.error('Supabase error:', msgErr);
+        toast('⚠ Supabase: ' + msgErr.slice(0, 120), 'err');
       }
 
       btn.textContent = 'Abriendo correo corporativo...';
@@ -1541,6 +1545,40 @@ Princess Hotels & Resorts`;
     } finally {
       btn.disabled = false;
       btn.textContent = originalTxt;
+    }
+  }
+
+  // ── DIAGNÓSTICO SUPABASE ─────────────────────────────────────
+  async function testConexionSupabase() {
+    toast('Probando conexión a Supabase...', 'ok');
+    try {
+      // Test 1: API REST
+      const r1 = await fetch(`${SUPA_URL}/rest/v1/${SUPA_TABLE}?select=numero&limit=1`, {
+        headers: supaHeaders({ Accept: 'application/json' })
+      });
+      const txt1 = await r1.text().catch(() => '');
+      if (!r1.ok) {
+        toast(`✗ API REST: ${r1.status} – ${txt1.slice(0,100)}`, 'err');
+        return;
+      }
+      toast(`✓ API REST OK (${r1.status})`, 'ok');
+
+      // Test 2: Storage — subir fichero mínimo de prueba
+      const testBlob = new Blob(['test'], { type: 'text/plain' });
+      const testPath = `test_conexion/ping_${Date.now()}.txt`;
+      const r2 = await fetch(`${SUPA_URL}/storage/v1/object/${SUPA_BUCKET}/${encodeStoragePath(testPath)}`, {
+        method: 'POST',
+        headers: supaHeaders({ 'Content-Type': 'text/plain', 'x-upsert': 'true' }),
+        body: testBlob
+      });
+      const txt2 = await r2.text().catch(() => '');
+      if (!r2.ok) {
+        toast(`✗ Storage: ${r2.status} – ${txt2.slice(0,120)}`, 'err');
+        return;
+      }
+      toast(`✓ Storage OK — Supabase funciona correctamente`, 'ok');
+    } catch(e) {
+      toast(`✗ Error de red: ${e.message}`, 'err');
     }
   }
 

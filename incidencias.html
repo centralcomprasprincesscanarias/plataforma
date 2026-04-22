@@ -797,7 +797,7 @@
   const SUPA_URL    = 'https://ifiwuloipapsezmssyda.supabase.co';
   const SUPA_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmaXd1bG9pcGFwc2V6bXNzeWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDA5NDgsImV4cCI6MjA5MTM3Njk0OH0.Wjs298hA8xAnIQ4IQHEq3eEfaygF-6FY_5I4i2Se3ZY';
   const SUPA_TABLE  = 'incidencias';
-  const SUPA_BUCKET = 'incidencias-pdf';
+  const SUPA_BUCKET = 'incidencias';
   const GMAIL_EDGE_FUNCTION = `${SUPA_URL}/functions/v1/send-gmail-incidencia`;
     const ADMIN_EMAIL    = 'centralcomprascanarias.princess@gmail.com';
   const DIRECTOR_EMAIL = 'directorcompras.canarias@princess-hotels.com';
@@ -1428,7 +1428,7 @@ Registro generado automaticamente - Princess Hotels & Resorts - Central Compras 
         toast('Incidencia subida a Supabase ✓', 'ok');
       } catch (remoteErr) {
         console.error(remoteErr);
-        toast('No se pudo subir a Supabase. Gmail se enviará sin enlace público.', 'err');
+        toast('No se pudo subir a Supabase. Revisa bucket y policies. Gmail se enviará sin enlace público.', 'err');
       }
 
       btn.textContent = 'Enviando por Gmail...';

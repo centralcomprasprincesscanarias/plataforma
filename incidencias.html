@@ -576,13 +576,13 @@
   </div>
 
 
-  <button class="btn-enviar" id="btnGuardar" onclick="guardarYRegistrar()">📧 Guardar incidencia, PDF y abrir correo</button>
+  <button class="btn-enviar" id="btnGuardar" onclick="guardarYRegistrar()">📧 Guardar incidencia, PDF y abrir correo corporativo</button>
   <div style="margin-top:10px;text-align:center">
     <button type="button" onclick="testConexionSupabase()" style="background:transparent;border:1px dashed var(--border);color:var(--sub);font-family:Outfit,sans-serif;font-size:11px;padding:6px 14px;border-radius:8px;cursor:pointer;">🔌 Probar conexión Supabase</button>
   </div>
   <div style="display:none;gap:10px;margin-top:10px;flex-wrap:wrap">
     <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="generarPdfIncidencia()">Generar PDF</button>
-    <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="abrirCorreoIncidencia()">Enviar por Gmail</button>
+    <button class="btn-enviar" type="button" style="flex:1;min-width:220px;background:transparent;border:1px solid var(--border);color:var(--gold2)" onclick="abrirCorreoIncidencia()">Abrir correo corporativo</button>
   </div>
 </div>
 
@@ -1063,10 +1063,17 @@
     return Array.isArray(rows) ? rows[0] : rows;
   }
 
-  async function guardarIncidenciaSupabase(snapshot, pdfBlob) {
+  async function subirPdfIncidenciaSupabase(snapshot, pdfBlob) {
     const storagePath = buildPdfStoragePath(snapshot.numero, snapshot.hotel, snapshot.fecha || hoyISOlocal());
     const subidaPdf = await subirBlobSupabase(SUPA_BUCKET, storagePath, pdfBlob, 'application/pdf');
+    updateRegistroLocal(snapshot.numero, {
+      pdf_path: subidaPdf.path,
+      pdf_url: subidaPdf.url
+    });
+    return subidaPdf;
+  }
 
+  async function registrarIncidenciaSupabase(snapshot, subidaPdf) {
     const payload = {
       numero: snapshot.numero,
       fecha: snapshot.fecha || null,
@@ -1083,8 +1090,8 @@
       medidas_correctoras: snapshot.medidas_correctoras || null,
       solucion_proveedor: snapshot.solucion_proveedor || null,
       cierre: Number(snapshot.cierre || 0),
-      pdf_path: subidaPdf.path,
-      pdf_url: subidaPdf.url,
+      pdf_path: subidaPdf?.path || null,
+      pdf_url: subidaPdf?.url || null,
       correo_para: snapshot.correo_para || null,
       correo_cc: snapshot.correo_cc || null,
       gmail_status: 'pendiente',
@@ -1093,12 +1100,33 @@
 
     const row = await insertarIncidenciaSupabase(payload);
     updateRegistroLocal(snapshot.numero, {
-      pdf_path: subidaPdf.path,
-      pdf_url: subidaPdf.url,
       supabase_id: row?.id ?? null,
       gmail_status: row?.gmail_status || 'pendiente'
     });
+    return row;
+  }
+
+  async function guardarIncidenciaSupabase(snapshot, pdfBlob) {
+    const subidaPdf = await subirPdfIncidenciaSupabase(snapshot, pdfBlob);
+    const row = await registrarIncidenciaSupabase(snapshot, subidaPdf);
     return { row, pdf: subidaPdf };
+  }
+
+  async function esperarUrlPublicaDisponible(url, timeoutMs = 12000, intervalMs = 800) {
+    if (!url) return false;
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      try {
+        const probeUrl = `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}`;
+        let res = await fetch(probeUrl, { method: 'HEAD', cache: 'no-store' });
+        if (!res.ok) {
+          res = await fetch(probeUrl, { method: 'GET', cache: 'no-store' });
+        }
+        if (res.ok) return true;
+      } catch (_) {}
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
+    return false;
   }
 
   async function cargarRegistrosSupabase() {
@@ -1518,21 +1546,48 @@ Princess Hotels & Resorts`;
       if (!pdfResult || !pdfResult.blob) throw new Error('No se pudo generar el PDF');
       descargarBlob(pdfResult.blob, pdfResult.fileName);
 
-      btn.textContent = 'Subiendo PDF a Supabase...';
       let pdfUrl = '';
+      let subidaPdf = null;
+
+      btn.textContent = 'Subiendo PDF a Supabase...';
       try {
-        const remote = await guardarIncidenciaSupabase(snapshot, pdfResult.blob);
-        pdfUrl = remote?.pdf?.url || '';
+        subidaPdf = await subirPdfIncidenciaSupabase(snapshot, pdfResult.blob);
+        pdfUrl = subidaPdf?.url || '';
         if (pdfUrl) toast('PDF subido a Supabase ✓', 'ok');
-      } catch (remoteErr) {
-        const msgErr = remoteErr?.message || String(remoteErr);
-        console.error('Supabase error:', msgErr);
-        toast('⚠ Supabase: ' + msgErr.slice(0, 120), 'err');
+      } catch (storageErr) {
+        const msgErr = storageErr?.message || String(storageErr);
+        console.error('Supabase storage error:', msgErr);
+        toast('⚠ Error subiendo PDF: ' + msgErr.slice(0, 120), 'err');
+      }
+
+      if (subidaPdf) {
+        btn.textContent = 'Registrando incidencia...';
+        try {
+          await registrarIncidenciaSupabase(snapshot, subidaPdf);
+        } catch (dbErr) {
+          const msgErr = dbErr?.message || String(dbErr);
+          console.error('Supabase DB error:', msgErr);
+          toast('⚠ El PDF sí está subido, pero falló el registro: ' + msgErr.slice(0, 110), 'err');
+        }
       }
 
       updateRegistroLocal(numero, { gmail_status: 'pendiente_envio' });
+
+      if (pdfUrl) {
+        btn.textContent = 'Verificando enlace del PDF...';
+        const enlaceDisponible = await esperarUrlPublicaDisponible(pdfUrl, 12000, 800);
+        if (!enlaceDisponible) {
+          toast('El PDF subió, pero el enlace público tarda en estar disponible. Se abrirá el correo igualmente.', 'err');
+        }
+      }
+
+      btn.textContent = 'Abriendo correo corporativo...';
       abrirMailtoIncidencia(snapshot, pdfUrl);
-      toast('Correo preparado en tu cliente de correo ✓', 'ok');
+      toast(pdfUrl
+        ? 'Se abrió el correo corporativo con el enlace del PDF ✓'
+        : 'Se abrió el correo corporativo. El PDF se descargó en el equipo para adjuntarlo manualmente.',
+        pdfUrl ? 'ok' : 'err');
+
       resetForm();
 
     } catch (err) {
@@ -1580,8 +1635,8 @@ Princess Hotels & Resorts`;
 
   // ── MAILTO CORPORATIVO ───────────────────────────────────────
   function abrirMailtoIncidencia(snapshot, pdfUrl = '') {
-    const toList  = uniqueEmails(parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel)));
-    const bccList = uniqueEmails(parseEmailList(snapshot.correo_cc  || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
+    const toList = uniqueEmails(parseEmailList(snapshot.correo_para || getCorreoCompradorPorHotel(snapshot.hotel)));
+    const ccList = uniqueEmails(parseEmailList(snapshot.correo_cc || `${ADMIN_EMAIL},${DIRECTOR_EMAIL}`))
       .filter(email => !toList.some(to => to.toLowerCase() === email.toLowerCase()));
 
     const numeroTxt    = String(snapshot.numero || '—').padStart(4, '0');
@@ -1592,17 +1647,14 @@ Princess Hotels & Resorts`;
     const subject      = `INCIDENCIA ${numeroTxt} · SAP ${sapHotel} · ${hotelTxt} · ${depTxt} · ${proveedorTxt}`;
     const body         = construirTextoCorreoDesdeSnapshot(snapshot, pdfUrl);
 
-    const mailto = `mailto:${toList.join(',')}`
-      + `?bcc=${encodeURIComponent(bccList.join(','))}`
-      + `&subject=${encodeURIComponent(subject)}`
-      + `&body=${encodeURIComponent(body)}`;
+    let mailto = `mailto:${encodeURIComponent(toList.join(','))}`;
+    const params = [];
+    if (ccList.length) params.push(`cc=${encodeURIComponent(ccList.join(','))}`);
+    params.push(`subject=${encodeURIComponent(subject)}`);
+    params.push(`body=${encodeURIComponent(body)}`);
+    if (params.length) mailto += `?${params.join('&')}`;
 
-    const a = document.createElement('a');
-    a.href = mailto;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => a.remove(), 500);
+    window.location.href = mailto;
   }
 
   // ── RESET FORM ────────────────────────────────────────────────
@@ -1624,7 +1676,7 @@ Princess Hotels & Resorts`;
   // ── ENVIAR CORREO ─────────────────────────────────────────────
   function abrirCorreoIncidencia(pdfUrl = '') {
     const numero = Number(document.getElementById('numRegistro')?.textContent?.trim() || 0);
-    return enviarCorreoIncidenciaGmail(obtenerSnapshotFormulario(numero), pdfUrl);
+    return abrirMailtoIncidencia(obtenerSnapshotFormulario(numero), pdfUrl);
   }
 
   // ── GENERAR PDF ───────────────────────────────────────────────

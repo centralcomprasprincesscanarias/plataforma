@@ -950,7 +950,7 @@
       method: 'POST',
       headers: supaHeaders({
         'Content-Type': contentType || blob.type || 'application/octet-stream',
-        'x-upsert': 'true'
+        // 'x-upsert': 'true'
       }),
       body: blob
     });

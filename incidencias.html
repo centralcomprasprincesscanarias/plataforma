@@ -799,7 +799,7 @@
   const SUPA_URL    = 'https://ifiwuloipapsezmssyda.supabase.co';
   const SUPA_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmaXd1bG9pcGFwc2V6bXNzeWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDA5NDgsImV4cCI6MjA5MTM3Njk0OH0.Wjs298hA8xAnIQ4IQHEq3eEfaygF-6FY_5I4i2Se3ZY';
   const SUPA_TABLE  = 'incidencias';
-  const SUPA_BUCKET = 'incidencias-pdf';
+  const SUPA_BUCKET = 'incidencias';
   const GMAIL_EDGE_FUNCTION = `${SUPA_URL}/functions/v1/send-gmail-incidencia`;
     const ADMIN_EMAIL    = 'centralcomprascanarias.princess@gmail.com';
   const DIRECTOR_EMAIL = 'directorcompras.canarias@princess-hotels.com';
@@ -928,11 +928,9 @@
 
   function buildPdfStoragePath(numero, hotel, fechaISO) {
     const sap = getSapHotelByName(hotel) || '0000';
-    const nombreCentro = CENTROS_SAP_CANARIAS[sap] || hotel || 'HOTEL';
-    const carpetaHotel = `${sap}_${slugifyPath(nombreCentro)}`;
-    const fecha = String(fechaISO || hoyISOlocal());
-    const fileName = `incidencia_${String(numero || 0).padStart(4, '0')}_${fecha}.pdf`;
-    return `${carpetaHotel}/ENTRADA/${fileName}`;
+    const fecha = String(fechaISO || hoyISOlocal()).replace(/-/g, '');
+    const fileName = `incidencia_${String(numero || 0).padStart(4, '0')}_SAP${sap}_${fecha}.pdf`;
+    return fileName;
   }
 
   function parseEmailList(value) {

@@ -385,6 +385,54 @@
 
 <a id="btn-admin-hub" href="admin.html" title="Admin" style="position:fixed;bottom:18px;right:18px;width:28px;height:28px;border-radius:50%;background:rgba(176,141,87,0.08);border:1px solid rgba(176,141,87,0.15);opacity:0.35;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:11px;color:#c9a84c;transition:opacity 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.35">⚙</a>
 <script>
+
+function getHubWindowsUser() {
+  const params = new URLSearchParams(window.location.search);
+  const fromUrl = params.get('winuser') || params.get('user') || '';
+  const candidates = [
+    fromUrl,
+    window.PRINCESS_WINDOWS_USER,
+    sessionStorage.getItem('princess_windows_user'),
+    localStorage.getItem('princess_windows_user')
+  ];
+  try {
+    if (window.AndroidPrincess && typeof window.AndroidPrincess.getWindowsUser === 'function') {
+      candidates.push(window.AndroidPrincess.getWindowsUser());
+    }
+  } catch (_) {}
+
+  const value = candidates.find(v => String(v || '').trim());
+  if (!value) return '';
+  const normalized = String(value).trim().toLowerCase();
+  sessionStorage.setItem('princess_windows_user', normalized);
+  localStorage.setItem('princess_windows_user', normalized);
+  return normalized;
+}
+
+function buildHubTarget(basePath) {
+  const winuser = getHubWindowsUser();
+  if (!winuser) return basePath;
+  const url = new URL(basePath, window.location.href);
+  url.searchParams.set('winuser', winuser);
+  return url.pathname + url.search;
+}
+
+function goToHubTarget(basePath) {
+  window.location.href = buildHubTarget(basePath);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const winuser = getHubWindowsUser();
+  const cardInc = document.getElementById('cardIncidencias');
+  if (cardInc) {
+    cardInc.setAttribute('href', buildHubTarget('incidencias.html'));
+  }
+  const btnInc = document.querySelector('#cardIncidencias .card-btn');
+  if (btnInc) {
+    btnInc.setAttribute('onclick', "event.preventDefault(); goToHubTarget('incidencias.html')");
+  }
+});
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
     navigator.serviceWorker.register("sw.js").catch(function (err) {

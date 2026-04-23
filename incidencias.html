@@ -504,6 +504,118 @@
     color: var(--sub);
     font-weight: 500;
   }
+
+
+/* ── AUTENTICACIÓN CENTRAL DE COMPRAS ── */
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.78);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 99998;
+}
+.auth-modal.open { display: flex; }
+.auth-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 24px 90px rgba(0,0,0,0.45);
+  overflow: hidden;
+}
+.auth-head {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.auth-head h3 {
+  font-size: 19px;
+  color: var(--gold2);
+  margin: 0;
+}
+.auth-head p {
+  font-size: 13px;
+  color: var(--sub);
+  margin-top: 5px;
+  line-height: 1.45;
+}
+.auth-close {
+  background: transparent;
+  color: var(--sub);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.auth-body { padding: 20px 22px 22px; }
+.auth-panel { display:none; }
+.auth-panel.activo { display:block; }
+.auth-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.auth-grid .span2 { grid-column: span 2; }
+.auth-note {
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.18);
+  color: var(--gold2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+.auth-msg {
+  min-height: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+.auth-msg.ok { color: var(--green); }
+.auth-msg.err { color: var(--red); }
+.auth-actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+.auth-session-info {
+  min-height: 18px;
+  font-size: 12px;
+  color: var(--sub);
+  margin-top: 10px;
+  line-height: 1.45;
+}
+.auth-inline-user {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  color: var(--gold2);
+  background: rgba(201,168,76,0.08);
+  border:1px solid rgba(201,168,76,0.16);
+  border-radius:999px;
+  padding:6px 10px;
+  margin-top:8px;
+}
+@media (max-width: 600px) {
+  .auth-grid { grid-template-columns: 1fr; }
+  .auth-grid .span2 { grid-column: span 1; }
+  .auth-actions > * { width: 100%; }
+}
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -715,25 +827,78 @@
 </div>
 
 
+
 <!-- ACCESO CENTRAL DE COMPRAS -->
 <div class="central-acceso" id="centralAccesoCard">
   <div class="central-acceso-head">
     <div>
       <div class="central-acceso-title">Acceso Central de Compras</div>
-      <div class="central-acceso-sub">La pantalla principal sigue siendo la de incidencias del hotel. Solo al final de la página se habilita el acceso restringido para Central de Compras mediante contraseña.</div>
+      <div class="central-acceso-sub" id="centralAccessSub">Acceso automático si el usuario Windows está autorizado. Si no coincide, se solicitará usuario y contraseña. La sesión queda recordada en este equipo durante 30 días.</div>
+      <div class="auth-session-info" id="centralSessionInfo"></div>
     </div>
   </div>
   <div class="central-row">
     <div class="form-group" style="margin:0">
-      <label>Contraseña Central de Compras</label>
-      <input type="password" id="centralPassword" placeholder="Introduce la contraseña">
+      <label>Estado de acceso</label>
+      <div id="centralWindowsInfo" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--sub);min-height:44px;display:flex;align-items:center;">Comprobando usuario Windows…</div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button type="button" class="central-btn" onclick="accederCentral()">Acceder a Central de Compras</button>
-      <button type="button" class="central-btn sec" id="btnCerrarCentral" style="display:none" onclick="cerrarCentral()">Salir de Central de Compras</button>
+      <button type="button" class="central-btn" id="btnAccederCentral" onclick="accederCentral()">Acceder a Central de Compras</button>
+      <button type="button" class="central-btn sec" id="btnCerrarCentral" style="display:none" onclick="cerrarCentral()">Cerrar sesión Central</button>
     </div>
   </div>
-  <div id="centralMsg" style="margin-top:12px;font-size:13px;font-weight:600;color:var(--red);min-height:18px;"></div>
+  <div id="centralMsg" style="margin-top:12px;font-size:13px;font-weight:600;color:var(--sub);min-height:18px;"></div>
+</div>
+
+<div class="auth-modal" id="centralAuthModal">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div>
+        <h3>Central de Compras</h3>
+        <p id="authModalSub">Acceso manual solo para usuarios autorizados. La contraseña temporal se cambia obligatoriamente en el primer acceso.</p>
+      </div>
+      <button type="button" class="auth-close" onclick="cerrarModalAuth()">✕</button>
+    </div>
+    <div class="auth-body">
+      <div class="auth-panel activo" id="authPanelLogin">
+        <div class="auth-note">Solo tú, como administrador, gestionas los usuarios y los resets en Supabase. El comprador no necesita entrar en Supabase.</div>
+        <div id="authDetectedWindows" class="auth-inline-user" style="display:none"></div>
+        <div class="auth-grid" style="margin-top:14px;">
+          <div class="form-group span2">
+            <label>Usuario</label>
+            <input type="text" id="authIdentifier" placeholder="Ejemplo: comprascan4 o Fran Gonzalez">
+          </div>
+          <div class="form-group span2">
+            <label>Contraseña</label>
+            <input type="password" id="authPassword" placeholder="Introduce la contraseña temporal o actual">
+          </div>
+        </div>
+        <div class="auth-actions">
+          <button type="button" class="central-btn" id="btnAuthLogin" onclick="iniciarSesionCentralManual()">Entrar</button>
+          <button type="button" class="central-btn sec" onclick="cerrarModalAuth()">Cancelar</button>
+        </div>
+        <div class="auth-msg" id="authLoginMsg"></div>
+      </div>
+
+      <div class="auth-panel" id="authPanelChange">
+        <div class="auth-note">Debes cambiar la contraseña temporal antes de continuar. Esta contraseña nueva solo la sabrá el comprador.</div>
+        <div class="auth-grid">
+          <div class="form-group span2">
+            <label>Nueva contraseña</label>
+            <input type="password" id="authNewPassword" placeholder="Mínimo 8 caracteres">
+          </div>
+          <div class="form-group span2">
+            <label>Repetir nueva contraseña</label>
+            <input type="password" id="authConfirmPassword" placeholder="Repite la nueva contraseña">
+          </div>
+        </div>
+        <div class="auth-actions">
+          <button type="button" class="central-btn" id="btnAuthChange" onclick="cambiarPasswordTemporal()">Guardar nueva contraseña</button>
+        </div>
+        <div class="auth-msg" id="authChangeMsg"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="central-wrap" id="centralWrap">
@@ -916,104 +1081,286 @@
     '0910': 'FUERTEVENTURA PRINCESS'
   };
 
-  const COMPRADORES_WINDOWS = {
-    'dcompras':    { nombre: 'Jesus Curbelo',   rol: 'Coordinador' },
-    'comprascan1': { nombre: 'Victor Martin',    rol: 'Compras' },
-    'comprascan2': { nombre: 'Said Driss',       rol: 'Compras' },
-    'comprascan3': { nombre: 'David Rodriguez',  rol: 'Compras' },
-    'comprascan4': { nombre: 'Fran Gonzalez',    rol: 'Compras' },
-    'comprascan6': { nombre: 'Maria Cruz',       rol: 'Compras' },
+  
+const COMPRADORES_WINDOWS = {
+  'dcompras':    { nombre: 'Jesus Curbelo',   rol: 'Coordinador', username: 'dcompras' },
+  'comprascan1': { nombre: 'Victor Martin',   rol: 'Compras',     username: 'comprascan1' },
+  'comprascan':  { nombre: 'Victor Martin',   rol: 'Compras',     username: 'comprascan1' },
+  'comprascan2': { nombre: 'Said Driss',      rol: 'Compras',     username: 'comprascan2' },
+  'comprascan3': { nombre: 'David Rodriguez', rol: 'Compras',     username: 'comprascan3' },
+  'comprascan4': { nombre: 'Fran Gonzalez',   rol: 'Compras',     username: 'comprascan4' },
+  'comprascan6': { nombre: 'Maria Cruz',      rol: 'Compras',     username: 'comprascan6' },
+};
+
+const COMPRADORES_PC = {
+  // Si luego me pasas los identificadores exactos de equipo, se añaden aquí.
+};
+
+const LS_USER_KEY = 'princess_windows_user';
+const CENTRAL_AUTH_SESSION_KEY = 'central_compras_auth_session_v1';
+const CENTRAL_WINDOWS_INFO_KEY = 'central_compras_detected_windows_user';
+
+function normalizeText(v) {
+  return String(v || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function getCanonicalCompradorKey(value) {
+  const info = COMPRADORES_WINDOWS[normalizeText(value)];
+  return info ? info.username : normalizeText(value);
+}
+
+function getCompradorPorWindows(value) {
+  const raw = normalizeText(value);
+  if (!raw) return null;
+  const info = COMPRADORES_WINDOWS[raw];
+  if (!info) return null;
+  return {
+    key: getCanonicalCompradorKey(raw),
+    username: info.username,
+    nombre: info.nombre,
+    rol: info.rol,
+    detected_windows_user: raw
   };
+}
 
-  const COMPRADORES_PC = {
-    // Si luego me pasas los identificadores exactos de equipo, se añaden aquí.
+function detectarUsuarioWindows() {
+  const urlParams = new URLSearchParams(location.search);
+  const urlUser = urlParams.get('winuser') || urlParams.get('user');
+  const candidatos = [
+    urlUser,
+    sessionStorage.getItem(CENTRAL_WINDOWS_INFO_KEY),
+    localStorage.getItem(CENTRAL_WINDOWS_INFO_KEY),
+    sessionStorage.getItem(LS_USER_KEY),
+    localStorage.getItem(LS_USER_KEY),
+    window.PRINCESS_WINDOWS_USER
+  ];
+
+  try {
+    if (window.AndroidPrincess && typeof window.AndroidPrincess.getWindowsUser === 'function') {
+      candidatos.push(window.AndroidPrincess.getWindowsUser());
+    }
+  } catch (_) {}
+
+  const detectado = candidatos.map(v => normalizeText(v)).find(Boolean) || '';
+  if (detectado) {
+    localStorage.setItem(CENTRAL_WINDOWS_INFO_KEY, detectado);
+    sessionStorage.setItem(CENTRAL_WINDOWS_INFO_KEY, detectado);
+    localStorage.setItem(LS_USER_KEY, detectado);
+    sessionStorage.setItem(LS_USER_KEY, detectado);
+  }
+  return detectado;
+}
+
+function detectarCompradorCentral() {
+  const detectado = detectarUsuarioWindows();
+  const comprador = getCompradorPorWindows(detectado);
+  if (comprador) return { via: 'usuario', ...comprador };
+
+  const candidatosPc = [
+    new URLSearchParams(location.search).get('pc'),
+    sessionStorage.getItem('princess_device_id'),
+    localStorage.getItem('princess_device_id'),
+    window.PRINCESS_DEVICE_ID
+  ];
+  const pc = candidatosPc.map(v => normalizeText(v)).find(v => v && COMPRADORES_PC[v]);
+  if (pc) return { via: 'pc', key: COMPRADORES_PC[pc].username || pc, nombre: COMPRADORES_PC[pc].nombre, rol: COMPRADORES_PC[pc].rol || 'Compras', username: COMPRADORES_PC[pc].username || pc, detected_windows_user: detectado || '' };
+
+  return null;
+}
+
+function getCentralAuthState() {
+  try {
+    const state = JSON.parse(localStorage.getItem(CENTRAL_AUTH_SESSION_KEY) || 'null');
+    if (!state || !state.session_token) return null;
+    if (state.expires_at && new Date(state.expires_at).getTime() <= Date.now()) {
+      clearCentralAuthState();
+      return null;
+    }
+    return state;
+  } catch {
+    clearCentralAuthState();
+    return null;
+  }
+}
+
+function saveCentralAuthState(state) {
+  const merged = {
+    ...state,
+    user_key: getCanonicalCompradorKey(state?.user_key || state?.username || state?.windows_user || state?.detected_windows_user || ''),
+    username: getCanonicalCompradorKey(state?.username || state?.user_key || state?.windows_user || state?.detected_windows_user || ''),
+    display_name: state?.display_name || state?.real_name || '',
+    role: state?.role || '',
+    windows_user: normalizeText(state?.windows_user || state?.detected_windows_user || detectarUsuarioWindows())
   };
+  localStorage.setItem(CENTRAL_AUTH_SESSION_KEY, JSON.stringify(merged));
+  sessionStorage.setItem('central_compras_ok', '1');
+  sessionStorage.setItem('central_compras_user', merged.username || merged.user_key || '');
+  return merged;
+}
 
-  // ── IDENTIFICACIÓN AUTOMÁTICA POR PC ─────────────────────
-  const LS_USER_KEY = 'princess_windows_user';
+function clearCentralAuthState() {
+  localStorage.removeItem(CENTRAL_AUTH_SESSION_KEY);
+  sessionStorage.removeItem('central_compras_ok');
+  sessionStorage.removeItem('central_compras_user');
+}
 
-  function iniciarIdentificacion() {
-    // 1. Comprobar si ya hay usuario guardado (URL param, session o local)
-    const urlParam = new URLSearchParams(location.search).get('winuser')
-                  || new URLSearchParams(location.search).get('user');
-    if (urlParam) {
-      localStorage.setItem(LS_USER_KEY, urlParam.toLowerCase().trim());
-    }
+function getCompradorActual() {
+  const state = getCentralAuthState();
+  if (!state) return null;
+  return {
+    key: state.user_key || state.username || '',
+    nombre: state.display_name || state.real_name || '',
+    rol: state.role || '',
+    access_mode: state.access_mode || '',
+    windows_user: state.windows_user || ''
+  };
+}
 
-    const userGuardado = localStorage.getItem(LS_USER_KEY)
-                      || sessionStorage.getItem(LS_USER_KEY);
-
-    if (userGuardado && COMPRADORES_WINDOWS[normalizeText(userGuardado)]) {
-      // Ya identificado → ocultar overlay y continuar
-      sessionStorage.setItem(LS_USER_KEY, userGuardado);
-      return;
-    }
-
-    // 2. No identificado → mostrar pantalla de selección
-    const overlay = document.getElementById('loginOverlay');
-    const grid = document.getElementById('loginGrid');
-    overlay.classList.remove('oculto');
-
-    const compradores = [
-      { key: 'dcompras',    nombre: 'Jesus Curbelo',  rol: 'Coordinador' },
-      { key: 'comprascan1', nombre: 'Victor Martin',   rol: 'Compras'     },
-      { key: 'comprascan2', nombre: 'Said Driss',      rol: 'Compras'     },
-      { key: 'comprascan3', nombre: 'David Rodriguez', rol: 'Compras'     },
-      { key: 'comprascan4', nombre: 'Fran Gonzalez',   rol: 'Compras'     },
-      { key: 'comprascan6', nombre: 'Maria Cruz',      rol: 'Compras'     },
-    ];
-
-    grid.innerHTML = compradores.map(c => `
-      <button class="login-btn" onclick="elegirUsuario('${c.key}','${c.nombre}')">
-        <span class="nombre">${c.nombre}</span>
-        <span class="usuario">${c.rol} · ${c.key}</span>
-      </button>
-    `).join('');
+function mostrarUserBadge() {
+  const comprador = getCompradorActual();
+  const badge = document.getElementById('userBadge');
+  if (!badge) return;
+  if (comprador) {
+    badge.textContent = `👤 ${comprador.nombre}`;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
   }
+}
 
-  function elegirUsuario(key, nombre) {
-    localStorage.setItem(LS_USER_KEY, key);
-    sessionStorage.setItem(LS_USER_KEY, key);
-    document.getElementById('loginOverlay').classList.add('oculto');
-    // Activar central si corresponde
-    const compradorAuto = detectarCompradorCentral();
-    if (compradorAuto) abrirCentralAutomaticamente(compradorAuto);
-    mostrarUserBadge();
-    if (typeof toast === 'function') toast('Bienvenido/a, ' + nombre + ' ✓', 'ok');
+function getDeviceInfoCentral() {
+  const parts = [
+    window.PRINCESS_DEVICE_ID || localStorage.getItem('princess_device_id') || sessionStorage.getItem('princess_device_id') || '',
+    navigator.platform || '',
+    navigator.userAgent || ''
+  ].filter(Boolean);
+  return parts.join(' | ').slice(0, 220);
+}
+
+function setCentralMsg(msg = '', tipo = 'info') {
+  const el = document.getElementById('centralMsg');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = tipo === 'err' ? 'var(--red)' : tipo === 'ok' ? 'var(--green)' : 'var(--sub)';
+}
+
+function setAuthMsg(targetId, msg = '', tipo = '') {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'auth-msg' + (tipo ? ' ' + tipo : '');
+}
+
+function updateWindowsInfoBanner() {
+  const box = document.getElementById('centralWindowsInfo');
+  if (!box) return;
+  const detectado = detectarUsuarioWindows();
+  const comprador = getCompradorPorWindows(detectado);
+  if (comprador) {
+    box.innerHTML = `Usuario Windows detectado: <strong style="color:var(--gold2)">${detectado}</strong> · acceso directo permitido para <strong style="color:var(--gold2)">${comprador.nombre}</strong>.`;
+  } else if (detectado) {
+    box.innerHTML = `Usuario Windows detectado: <strong style="color:var(--text)">${detectado}</strong> · se solicitará identificación manual.`;
+  } else {
+    box.textContent = 'No se ha detectado un usuario Windows autorizado. Se solicitará identificación manual.';
   }
+}
 
-  function normalizeText(v) {
-    return String(v || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
+function formatExpiryText(value) {
+  if (!value) return 'sesión activa';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return 'sesión activa';
+  return `sesión válida hasta ${d.toLocaleString('es-ES')}`;
+}
+
+function updateCentralSessionInfo() {
+  const infoEl = document.getElementById('centralSessionInfo');
+  const btnCerrar = document.getElementById('btnCerrarCentral');
+  const state = getCentralAuthState();
+  if (state) {
+    const modo = state.access_mode === 'windows' ? 'acceso automático por Windows' : 'sesión manual recordada';
+    if (infoEl) infoEl.textContent = `${state.display_name || state.username || 'Usuario'} · ${modo} · ${formatExpiryText(state.expires_at)}`;
+    if (btnCerrar) btnCerrar.style.display = 'inline-flex';
+    setCentralMsg(`Central de Compras preparada para ${state.display_name || state.username}.`, 'ok');
+  } else {
+    if (infoEl) infoEl.textContent = '';
+    if (btnCerrar) btnCerrar.style.display = 'none';
+    setCentralMsg('');
   }
+}
 
-  // Devuelve el comprador actualmente autenticado { key, nombre } o null
-  function getCompradorActual() {
-    const key = sessionStorage.getItem('central_compras_user');
-    if (!key) return null;
-    const keyNorm = normalizeText(key);
-    const entry = COMPRADORES_WINDOWS[keyNorm] || COMPRADORES_WINDOWS[key];
-    if (!entry) return null;
-    return { key: keyNorm, nombre: entry.nombre };
-  }
+function abrirCentralUI(state, toastMessage = '') {
+  if (state) saveCentralAuthState(state);
+  document.getElementById('centralWrap')?.classList.add('open');
+  cargarCentralCompras();
+  irCentralTab('hoteles');
+  mostrarUserBadge();
+  updateCentralSessionInfo();
+  if (toastMessage && typeof toast === 'function') toast(toastMessage, 'ok');
+}
 
-  function mostrarUserBadge() {
-    const comprador = getCompradorActual();
-    const badge = document.getElementById('userBadge');
-    if (!badge) return;
-    if (comprador) {
-      badge.textContent = '👤 ' + comprador.nombre;
-      badge.style.display = 'block';
+function cerrarCentralUI() {
+  document.getElementById('centralWrap')?.classList.remove('open');
+  mostrarUserBadge();
+  updateCentralSessionInfo();
+}
+
+function abrirModalAuth(panel = 'login') {
+  const modal = document.getElementById('centralAuthModal');
+  if (!modal) return;
+  document.getElementById('authPanelLogin')?.classList.toggle('activo', panel === 'login');
+  document.getElementById('authPanelChange')?.classList.toggle('activo', panel === 'change');
+  const detectado = detectarUsuarioWindows();
+  const badge = document.getElementById('authDetectedWindows');
+  if (badge) {
+    if (detectado) {
+      badge.textContent = `Usuario Windows detectado: ${detectado}`;
+      badge.style.display = 'inline-flex';
     } else {
       badge.style.display = 'none';
+      badge.textContent = '';
     }
   }
+  if (panel === 'login') {
+    document.getElementById('authIdentifier').value = getCanonicalCompradorKey(detectado || '');
+    document.getElementById('authPassword').value = '';
+    setAuthMsg('authLoginMsg', '');
+    setTimeout(() => document.getElementById('authPassword')?.focus(), 50);
+  } else {
+    document.getElementById('authNewPassword').value = '';
+    document.getElementById('authConfirmPassword').value = '';
+    setAuthMsg('authChangeMsg', '');
+    setTimeout(() => document.getElementById('authNewPassword')?.focus(), 50);
+  }
+  modal.classList.add('open');
+}
 
-  function hoyISOlocal() {
+function cerrarModalAuth(force = false) {
+  const state = getCentralAuthState();
+  if (!force && state?.must_change_password) return;
+  document.getElementById('centralAuthModal')?.classList.remove('open');
+}
+
+function requireCentralAuth(actionLabel = 'realizar esta acción') {
+  const state = getCentralAuthState();
+  if (!state) {
+    toast(`Debes identificarte para ${actionLabel}.`, 'err');
+    accederCentral();
+    return false;
+  }
+  if (state.must_change_password) {
+    abrirModalAuth('change');
+    toast('Debes cambiar la contraseña temporal antes de continuar.', 'err');
+    return false;
+  }
+  return true;
+}
+
+function hoyISOlocal() {
     const d = new Date();
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -1452,64 +1799,6 @@ Princess Hotels & Resorts`;
   function actualizarHotelDatos() {
     actualizarHotelSap();
     actualizarCorreoComprador();
-  }
-
-  function detectarCompradorCentral() {
-    // Si viene ?winuser= en la URL, guardarlo en localStorage para persistir
-    const urlParams = new URLSearchParams(location.search);
-    const winuserParam = urlParams.get('winuser') || urlParams.get('user');
-    if (winuserParam) {
-      localStorage.setItem(LS_USER_KEY, winuserParam.toLowerCase().trim());
-      sessionStorage.setItem(LS_USER_KEY, winuserParam.toLowerCase().trim());
-    }
-
-    const candidatosUsuario = [
-      winuserParam,
-      sessionStorage.getItem(LS_USER_KEY),
-      localStorage.getItem(LS_USER_KEY),
-      sessionStorage.getItem('princess_windows_user'),
-      localStorage.getItem('princess_windows_user'),
-      window.PRINCESS_WINDOWS_USER
-    ];
-
-    try {
-      if (window.AndroidPrincess && typeof window.AndroidPrincess.getWindowsUser === 'function') {
-        candidatosUsuario.push(window.AndroidPrincess.getWindowsUser());
-      }
-    } catch (_) {}
-
-    const candidatosPc = [
-      new URLSearchParams(location.search).get('pc'),
-      sessionStorage.getItem('princess_device_id'),
-      localStorage.getItem('princess_device_id'),
-      window.PRINCESS_DEVICE_ID
-    ];
-
-    const usuario = candidatosUsuario.map(v => normalizeText(v)).find(v => v && COMPRADORES_WINDOWS[v]);
-    if (usuario) return { via: 'usuario', key: usuario, nombre: COMPRADORES_WINDOWS[usuario].nombre };
-
-    const pc = candidatosPc.map(v => normalizeText(v)).find(v => v && COMPRADORES_PC[v]);
-    if (pc) return { via: 'pc', key: pc, nombre: COMPRADORES_PC[pc].nombre };
-
-    return null;
-  }
-
-  function abrirCentralAutomaticamente(info) {
-    sessionStorage.setItem('central_compras_ok', '1');
-    if (info?.key) sessionStorage.setItem('central_compras_user', info.key);
-    mostrarUserBadge();
-    const wrap = document.getElementById('centralWrap');
-    if (wrap) wrap.classList.add('open');
-    const btnCerrar = document.getElementById('btnCerrarCentral');
-    if (btnCerrar) btnCerrar.style.display = 'inline-flex';
-    const card = document.getElementById('centralAccesoCard');
-    if (card) card.style.display = 'none';
-    cargarCentralCompras();
-    irCentralTab('hoteles');
-    setTimeout(() => {
-      wrap?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (info?.nombre) toast(`Central de Compras · ${info.nombre}`, 'ok');
-    }, 120);
   }
 
   // ── DESCRIPCIÓN → RIESGO AUTOMÁTICO ──────────────────────────
@@ -2163,8 +2452,14 @@ Princess Hotels & Resorts`;
 </script>
 
 <script>
-const CENTRAL_PASSWORD = 'Princess2026';
+
 const CENTRAL_KEY = 'princess_incidencias_central';
+const CENTRAL_RPC_LOGIN = 'cc_login';
+const CENTRAL_RPC_WINDOWS = 'cc_start_windows_session';
+const CENTRAL_RPC_VALIDATE = 'cc_validate_session';
+const CENTRAL_RPC_CHANGE = 'cc_change_password';
+const CENTRAL_RPC_LOGOUT = 'cc_logout';
+const CENTRAL_RPC_LOG = 'cc_log_action';
 let incidenciaCentralActual = null;
 
 function getSolucionesCentral(){
@@ -2173,101 +2468,199 @@ function getSolucionesCentral(){
 function setSolucionesCentral(lista){
   localStorage.setItem(CENTRAL_KEY, JSON.stringify(lista));
 }
-function accederCentral(){
-  const val = document.getElementById('centralPassword').value;
-  const msg = document.getElementById('centralMsg');
-  if(val === CENTRAL_PASSWORD){
-    // Contraseña correcta — comprobar si ya está identificado
-    const userGuardado = localStorage.getItem(LS_USER_KEY) || sessionStorage.getItem(LS_USER_KEY);
-    if (userGuardado && COMPRADORES_WINDOWS[normalizeText(userGuardado)]) {
-      // Ya identificado → abrir directamente
-      sessionStorage.setItem('central_compras_ok', '1');
-      document.getElementById('centralWrap').classList.add('open');
-      const btnCerrar = document.getElementById('btnCerrarCentral'); if (btnCerrar) btnCerrar.style.display = 'inline-flex';
-      msg.style.color = 'var(--green)';
-      msg.textContent = 'Acceso concedido · ' + COMPRADORES_WINDOWS[normalizeText(userGuardado)].nombre;
-      mostrarUserBadge();
-      cargarCentralCompras();
-      setTimeout(() => document.getElementById('centralWrap').scrollIntoView({behavior:'smooth', block:'start'}), 150);
-    } else {
-      // No identificado → mostrar selector de persona
-      msg.style.color = 'var(--green)';
-      msg.textContent = 'Contraseña correcta. Selecciona tu nombre abajo.';
-      mostrarSelectorComprador();
+
+async function centralRpc(fn, payload = {}) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: supaHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data?.message || data?.error || `${fn}: ${res.status}`);
+  }
+  return data;
+}
+
+function buildCentralStateFromResponse(data, fallbackMode = 'manual') {
+  return saveCentralAuthState({
+    session_token: data.session_token,
+    expires_at: data.expires_at,
+    username: data.username || data.user_key || '',
+    user_key: data.user_key || data.username || '',
+    display_name: data.display_name || data.real_name || '',
+    role: data.role || '',
+    windows_user: data.windows_user || data.detected_windows_user || detectarUsuarioWindows(),
+    access_mode: data.access_mode || fallbackMode,
+    must_change_password: Boolean(data.must_change_password)
+  });
+}
+
+async function validarSesionCentral(openIfValid = true) {
+  const state = getCentralAuthState();
+  if (!state?.session_token) return false;
+  try {
+    const data = await centralRpc(CENTRAL_RPC_VALIDATE, {
+      p_session_token: state.session_token,
+      p_detected_windows_user: detectarUsuarioWindows(),
+      p_device: getDeviceInfoCentral()
+    });
+    if (!data?.ok) {
+      clearCentralAuthState();
+      cerrarCentralUI();
+      return false;
     }
-  } else {
-    msg.style.color = 'var(--red)';
-    msg.textContent = 'Contraseña incorrecta.';
+    const merged = buildCentralStateFromResponse(data, state.access_mode || 'manual');
+    if (merged.must_change_password) {
+      abrirModalAuth('change');
+      return false;
+    }
+    if (openIfValid) abrirCentralUI(merged);
+    return true;
+  } catch (err) {
+    console.warn('No se pudo validar la sesión de Central:', err);
+    clearCentralAuthState();
+    cerrarCentralUI();
+    return false;
   }
 }
-function cerrarCentral(){
-  sessionStorage.removeItem('central_compras_ok');
-  sessionStorage.removeItem(LS_USER_KEY);
-  document.getElementById('centralWrap').classList.remove('open');
-  const btnCerrar = document.getElementById('btnCerrarCentral'); if (btnCerrar) btnCerrar.style.display = 'none';
-  document.getElementById('centralPassword').value = '';
-  document.getElementById('centralMsg').textContent = '';
-  // Ocultar selector si estaba visible
-  const sel = document.getElementById('selectorCompradorWrap');
-  if (sel) sel.style.display = 'none';
-  mostrarUserBadge();
-}
 
-function mostrarSelectorComprador() {
-  let sel = document.getElementById('selectorCompradorWrap');
-  if (!sel) {
-    sel = document.createElement('div');
-    sel.id = 'selectorCompradorWrap';
-    sel.style.cssText = 'margin-top:16px;';
-    sel.innerHTML = `
-      <div style="font-size:13px;font-weight:600;color:var(--sub);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;">¿Quién accede?</div>
-      <div id="selectorCompradorGrid" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-    `;
-    document.getElementById('centralMsg').insertAdjacentElement('afterend', sel);
+async function intentarAccesoAutomaticoWindows(showToastOnSuccess = true) {
+  const info = detectarCompradorCentral();
+  if (!info?.username) return false;
+  try {
+    const data = await centralRpc(CENTRAL_RPC_WINDOWS, {
+      p_windows_user: info.username,
+      p_detected_windows_user: info.detected_windows_user || detectarUsuarioWindows(),
+      p_device: getDeviceInfoCentral()
+    });
+    if (!data?.ok) return false;
+    const state = buildCentralStateFromResponse(data, 'windows');
+    abrirCentralUI(state, showToastOnSuccess ? `Acceso directo concedido · ${state.display_name}` : '');
+    return true;
+  } catch (err) {
+    console.warn('Acceso automático no disponible:', err);
+    return false;
   }
-  sel.style.display = 'block';
-
-  const compradores = [
-    { key: 'dcompras',    nombre: 'Jesus Curbelo',  rol: 'Coordinador' },
-    { key: 'comprascan1', nombre: 'Victor Martin',   rol: 'Compras'     },
-    { key: 'comprascan2', nombre: 'Said Driss',      rol: 'Compras'     },
-    { key: 'comprascan3', nombre: 'David Rodriguez', rol: 'Compras'     },
-    { key: 'comprascan4', nombre: 'Fran Gonzalez',   rol: 'Compras'     },
-    { key: 'comprascan6', nombre: 'Maria Cruz',      rol: 'Compras'     },
-  ];
-
-  document.getElementById('selectorCompradorGrid').innerHTML = compradores.map(c => `
-    <button type="button"
-      onclick="confirmarCompradorYAbrir('${c.key}','${c.nombre}')"
-      style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-family:Outfit,sans-serif;cursor:pointer;text-align:left;transition:all .2s"
-      onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="font-size:14px;font-weight:700;color:var(--text)">${c.nombre}</div>
-      <div style="font-size:11px;color:var(--sub);margin-top:2px">${c.rol}</div>
-    </button>
-  `).join('');
 }
 
-function confirmarCompradorYAbrir(key, nombre) {
-  localStorage.setItem(LS_USER_KEY, key);
-  sessionStorage.setItem(LS_USER_KEY, key);
-  sessionStorage.setItem('central_compras_ok', '1');
-
-  const sel = document.getElementById('selectorCompradorWrap');
-  if (sel) sel.style.display = 'none';
-
-  const msg = document.getElementById('centralMsg');
-  msg.style.color = 'var(--green)';
-  msg.textContent = 'Acceso concedido · ' + nombre;
-
-  document.getElementById('centralWrap').classList.add('open');
-  const btnCerrar = document.getElementById('btnCerrarCentral');
-  if (btnCerrar) btnCerrar.style.display = 'inline-flex';
-
-  mostrarUserBadge();
-  cargarCentralCompras();
-  setTimeout(() => document.getElementById('centralWrap').scrollIntoView({behavior:'smooth', block:'start'}), 150);
-  if (typeof toast === 'function') toast('Bienvenido/a, ' + nombre + ' ✓', 'ok');
+async function accederCentral() {
+  if (await validarSesionCentral(true)) {
+    document.getElementById('centralWrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    return;
+  }
+  if (await intentarAccesoAutomaticoWindows(true)) {
+    document.getElementById('centralWrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+    return;
+  }
+  abrirModalAuth('login');
+  setCentralMsg('Acceso manual: introduce tu usuario y contraseña.', 'info');
 }
+
+async function iniciarSesionCentralManual() {
+  const identifier = document.getElementById('authIdentifier').value.trim();
+  const password = document.getElementById('authPassword').value;
+  if (!identifier || !password) {
+    setAuthMsg('authLoginMsg', 'Introduce usuario y contraseña.', 'err');
+    return;
+  }
+  const btn = document.getElementById('btnAuthLogin');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Validando...';
+  try {
+    const data = await centralRpc(CENTRAL_RPC_LOGIN, {
+      p_identifier: identifier,
+      p_password: password,
+      p_detected_windows_user: detectarUsuarioWindows(),
+      p_device: getDeviceInfoCentral()
+    });
+    if (!data?.ok) throw new Error(data?.error || 'Usuario o contraseña incorrectos.');
+    const state = buildCentralStateFromResponse(data, 'manual');
+    if (state.must_change_password) {
+      setAuthMsg('authLoginMsg', 'Acceso correcto. Debes cambiar la contraseña temporal.', 'ok');
+      abrirModalAuth('change');
+      return;
+    }
+    cerrarModalAuth(true);
+    abrirCentralUI(state, `Bienvenido/a, ${state.display_name} ✓`);
+    document.getElementById('centralWrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  } catch (err) {
+    setAuthMsg('authLoginMsg', err?.message || 'No se pudo iniciar sesión.', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+async function cambiarPasswordTemporal() {
+  const state = getCentralAuthState();
+  if (!state?.session_token) {
+    setAuthMsg('authChangeMsg', 'La sesión temporal ha expirado. Vuelve a identificarte.', 'err');
+    return;
+  }
+  const pass1 = document.getElementById('authNewPassword').value;
+  const pass2 = document.getElementById('authConfirmPassword').value;
+  if (pass1.length < 8) {
+    setAuthMsg('authChangeMsg', 'La nueva contraseña debe tener al menos 8 caracteres.', 'err');
+    return;
+  }
+  if (pass1 !== pass2) {
+    setAuthMsg('authChangeMsg', 'Las contraseñas no coinciden.', 'err');
+    return;
+  }
+  const btn = document.getElementById('btnAuthChange');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  try {
+    const data = await centralRpc(CENTRAL_RPC_CHANGE, {
+      p_session_token: state.session_token,
+      p_new_password: pass1
+    });
+    if (!data?.ok) throw new Error(data?.error || 'No se pudo cambiar la contraseña.');
+    const updated = buildCentralStateFromResponse(data, state.access_mode || 'manual');
+    updated.must_change_password = false;
+    saveCentralAuthState(updated);
+    cerrarModalAuth(true);
+    abrirCentralUI(updated, 'Contraseña actualizada ✓');
+    document.getElementById('centralWrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  } catch (err) {
+    setAuthMsg('authChangeMsg', err?.message || 'No se pudo cambiar la contraseña.', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+async function cerrarCentral() {
+  const state = getCentralAuthState();
+  try {
+    if (state?.session_token) {
+      await centralRpc(CENTRAL_RPC_LOGOUT, { p_session_token: state.session_token });
+    }
+  } catch (err) {
+    console.warn('No se pudo cerrar la sesión en servidor:', err);
+  }
+  clearCentralAuthState();
+  cerrarCentralUI();
+  setCentralMsg('Sesión cerrada.', 'info');
+}
+
+async function registrarTrazaCentral(action, details = {}) {
+  const state = getCentralAuthState();
+  if (!state?.session_token) return;
+  try {
+    await centralRpc(CENTRAL_RPC_LOG, {
+      p_session_token: state.session_token,
+      p_action: action,
+      p_details: details
+    });
+  } catch (err) {
+    console.warn('No se pudo registrar la traza de Central:', err);
+  }
+}
+
 function irCentralTab(tab){
   document.querySelectorAll('.central-tab').forEach(b => b.classList.toggle('activa', b.dataset.tabc === tab));
   document.getElementById('cHoteles').classList.toggle('activa', tab === 'hoteles');
@@ -2320,11 +2713,13 @@ function limpiarCentralForm(){
   document.getElementById('cSolucionProveedor').value = '';
   document.getElementById('cResultadoCentral').value = 'ABIERTA';
 }
-function guardarSolucionCentral(){
+async function guardarSolucionCentral(){
   if(!incidenciaCentralActual){
     if (typeof toast === 'function') toast('Selecciona primero una incidencia del hotel', 'err');
     return;
   }
+  if(!requireCentralAuth('guardar la solución de Central de Compras')) return;
+
   const solucion = document.getElementById('cSolucionProveedor').value.trim();
   const resultado = document.getElementById('cResultadoCentral').value.trim();
   const obs = document.getElementById('cObs').value.trim();
@@ -2332,8 +2727,9 @@ function guardarSolucionCentral(){
     if (typeof toast === 'function') toast('Añade al menos una solución o una observación de Central', 'err');
     return;
   }
+  const comprador = getCompradorActual();
   const lista = getSolucionesCentral();
-  lista.unshift({
+  const registro = {
     numero_hotel: incidenciaCentralActual.numero,
     hotel: incidenciaCentralActual.hotel || '',
     departamento: incidenciaCentralActual.departamento || '',
@@ -2343,11 +2739,21 @@ function guardarSolucionCentral(){
     solucion_proveedor: solucion,
     resultado_central: resultado,
     observaciones_central: obs,
-    gestor: getCompradorActual()?.nombre || '',
-    gestor_key: getCompradorActual()?.key || '',
+    gestor: comprador?.nombre || '',
+    gestor_key: comprador?.key || '',
+    gestor_windows_user: comprador?.windows_user || detectarUsuarioWindows() || '',
+    gestor_access_mode: comprador?.access_mode || '',
     fecha_solucion: new Date().toISOString()
-  });
+  };
+  lista.unshift(registro);
   setSolucionesCentral(lista);
+  await registrarTrazaCentral('guardar_solucion_central', {
+    numero_hotel: incidenciaCentralActual.numero,
+    hotel: incidenciaCentralActual.hotel || '',
+    proveedor: incidenciaCentralActual.proveedor || '',
+    resultado_central: resultado,
+    solucion_proveedor: solucion
+  });
   cargarRegistroSolucionesCentral();
   if (typeof toast === 'function') toast('Solución de Central de Compras guardada ✓', 'ok');
   limpiarCentralForm();
@@ -2357,7 +2763,7 @@ function cargarRegistroSolucionesCentral(){
   const tbody = document.getElementById('tbodyCentralSoluciones');
   const lista = getSolucionesCentral();
   if(!lista.length){
-    tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin soluciones registradas por Central de Compras.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin soluciones registradas por Central de Compras.</td></tr>';
     return;
   }
   tbody.innerHTML = lista.map(r => `
@@ -2368,29 +2774,35 @@ function cargarRegistroSolucionesCentral(){
       <td>${r.proveedor || '-'}</td>
       <td>${r.solucion_proveedor || '-'}</td>
       <td>${r.resultado_central || '-'}</td>
+      <td>${r.gestor || '-'}</td>
       <td>${r.observaciones_central || '-'}</td>
     </tr>
   `).join('');
 }
-document.addEventListener('DOMContentLoaded', function(){
-  const p = document.getElementById('centralPassword');
-  if(p){
-    p.addEventListener('keydown', function(e){ if(e.key === 'Enter') accederCentral(); });
-  }
-
+document.addEventListener('DOMContentLoaded', async function(){
   actualizarHotelDatos();
+  updateWindowsInfoBanner();
+  updateCentralSessionInfo();
 
-  const compradorAuto = detectarCompradorCentral();
-  if (compradorAuto) {
-    abrirCentralAutomaticamente(compradorAuto);
+  const authIdentifier = document.getElementById('authIdentifier');
+  const authPassword = document.getElementById('authPassword');
+  const authNewPassword = document.getElementById('authNewPassword');
+  const authConfirmPassword = document.getElementById('authConfirmPassword');
+  if (authPassword) authPassword.addEventListener('keydown', function(e){ if(e.key === 'Enter') iniciarSesionCentralManual(); });
+  if (authIdentifier) authIdentifier.addEventListener('keydown', function(e){ if(e.key === 'Enter') iniciarSesionCentralManual(); });
+  if (authConfirmPassword) authConfirmPassword.addEventListener('keydown', function(e){ if(e.key === 'Enter') cambiarPasswordTemporal(); });
+  if (authNewPassword) authNewPassword.addEventListener('keydown', function(e){ if(e.key === 'Enter') cambiarPasswordTemporal(); });
+
+  if (await validarSesionCentral(true)) {
     return;
   }
 
-  if(sessionStorage.getItem('central_compras_ok') === '1'){
-    document.getElementById('centralWrap').classList.add('open');
-    const btnCerrar = document.getElementById('btnCerrarCentral'); if (btnCerrar) btnCerrar.style.display = 'inline-flex';
-    cargarCentralCompras();
+  if (await intentarAccesoAutomaticoWindows(false)) {
+    return;
   }
+
+  cerrarCentralUI();
+  updateCentralSessionInfo();
 });
 </script>
 

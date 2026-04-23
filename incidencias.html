@@ -648,6 +648,14 @@
     <div style="position:absolute;top:20px;right:22px;font-size:13px;font-weight:700;color:var(--gold2);">REGISTRO <span id="numRegistro">—</span></div>
     <div class="form-grid">
       <div class="form-group">
+        <label>Fecha *</label>
+        <input type="date" id="fFecha">
+      </div>
+      <div class="form-group">
+        <label>SAP Hotel</label>
+        <input type="text" id="fDali" placeholder="Se rellena automáticamente" readonly style="opacity:0.6;cursor:not-allowed">
+      </div>
+      <div class="form-group">
         <label>Hotel *</label>
         <select id="fHotel" onchange="actualizarHotelDatos()">
           <option value="">Selecciona hotel</option>
@@ -674,14 +682,6 @@
           <option>Pisos</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Fecha *</label>
-        <input type="date" id="fFecha">
-      </div>
-      <div class="form-group">
-        <label>SAP Hotel</label>
-        <input type="text" id="fDali" placeholder="Se rellena automáticamente" readonly style="opacity:0.6;cursor:not-allowed">
-      </div>
       <div class="form-group span2">
         <label>Destinatarios del correo</label>
         <div id="destinatariosBox" style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;min-height:44px;">
@@ -701,23 +701,23 @@
   <div class="seccion">
     <div class="seccion-titulo">Datos del proveedor</div>
     <div class="form-grid">
+      <div class="form-group">
+        <label>Nº SAP Proveedor</label>
+        <input type="text" id="fSap" placeholder="Se rellena automáticamente" readonly style="opacity:0.6;cursor:not-allowed">
+      </div>
       <div class="form-group" style="position:relative">
         <label>Proveedor *</label>
         <input type="text" id="fProveedor" placeholder="Escribe nombre o código SAP..." autocomplete="off" oninput="buscarProveedor(this.value)" onblur="autocompletarProveedor()">
         <div id="provSugerencias" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card2);border:1px solid var(--border);border-radius:10px;max-height:220px;overflow-y:auto;z-index:999;margin-top:4px;"></div>
         <input type="hidden" id="fProveedorCodigo">
       </div>
-      <div class="form-group">
-        <label>Nº SAP Proveedor</label>
-        <input type="text" id="fSap" placeholder="Se rellena automáticamente" readonly style="opacity:0.6;cursor:not-allowed">
-      </div>
-      <div class="form-group">
+      <div class="form-group span2">
         <label>Nº Albarán / Factura</label>
         <input type="text" id="fAlbaran" placeholder="58721">
       </div>
       <div class="form-group span2">
-        <label>Referencia</label>
-        <input type="text" id="fReferencia" placeholder="Artículo o referencia">
+        <label>Artículo</label>
+        <input type="text" id="fReferencia" placeholder="Artículo">
       </div>
     </div>
   </div>
@@ -829,7 +829,7 @@
 
 
 <!-- ACCESO CENTRAL DE COMPRAS -->
-<div class="central-acceso" id="centralAccesoCard">
+<div class="central-acceso" id="centralAccesoCard" style="display:none">
   <div class="central-acceso-head">
     <div>
       <div class="central-acceso-title">Acceso Central de Compras</div>
@@ -1256,9 +1256,27 @@ function setAuthMsg(targetId, msg = '', tipo = '') {
   el.className = 'auth-msg' + (tipo ? ' ' + tipo : '');
 }
 
+function shouldExposeCentralAccess() {
+  return Boolean(getCentralAuthState() || detectarCompradorCentral());
+}
+
+function applyCentralVisibility(forceVisible = null) {
+  const card = document.getElementById('centralAccesoCard');
+  const wrap = document.getElementById('centralWrap');
+  const modal = document.getElementById('centralAuthModal');
+  const visible = forceVisible === null ? shouldExposeCentralAccess() : !!forceVisible;
+  if (card) card.style.display = visible ? 'block' : 'none';
+  if (!visible) {
+    if (wrap) wrap.classList.remove('open');
+    if (modal) modal.classList.remove('open');
+  }
+  return visible;
+}
+
 function updateWindowsInfoBanner() {
   const box = document.getElementById('centralWindowsInfo');
   if (!box) return;
+  if (!shouldExposeCentralAccess()) return;
   const detectado = detectarUsuarioWindows();
   const comprador = getCompradorPorWindows(detectado);
   if (comprador) {
@@ -1295,6 +1313,7 @@ function updateCentralSessionInfo() {
 
 function abrirCentralUI(state, toastMessage = '') {
   if (state) saveCentralAuthState(state);
+  applyCentralVisibility(true);
   document.getElementById('centralWrap')?.classList.add('open');
   cargarCentralCompras();
   irCentralTab('hoteles');
@@ -1305,6 +1324,7 @@ function abrirCentralUI(state, toastMessage = '') {
 
 function cerrarCentralUI() {
   document.getElementById('centralWrap')?.classList.remove('open');
+  applyCentralVisibility();
   mostrarUserBadge();
   updateCentralSessionInfo();
 }
@@ -2781,6 +2801,7 @@ function cargarRegistroSolucionesCentral(){
 }
 document.addEventListener('DOMContentLoaded', async function(){
   actualizarHotelDatos();
+  applyCentralVisibility();
   updateWindowsInfoBanner();
   updateCentralSessionInfo();
 
@@ -2794,13 +2815,16 @@ document.addEventListener('DOMContentLoaded', async function(){
   if (authNewPassword) authNewPassword.addEventListener('keydown', function(e){ if(e.key === 'Enter') cambiarPasswordTemporal(); });
 
   if (await validarSesionCentral(true)) {
+    applyCentralVisibility(true);
     return;
   }
 
   if (await intentarAccesoAutomaticoWindows(false)) {
+    applyCentralVisibility(true);
     return;
   }
 
+  applyCentralVisibility(false);
   cerrarCentralUI();
   updateCentralSessionInfo();
 });

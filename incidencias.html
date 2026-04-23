@@ -828,8 +828,8 @@
 
 
 
-<!-- ACCESO CENTRAL DE COMPRAS -->
-<div class="central-acceso" id="centralAccesoCard" style="display:none">
+<!-- ACCESO CENTRAL DE COMPRAS — solo visible para compradores autorizados -->
+<div class="central-acceso" id="centralAccesoCard" style="display:none !important">
   <div class="central-acceso-head">
     <div>
       <div class="central-acceso-title">Acceso Central de Compras</div>
@@ -1256,18 +1256,41 @@ function setAuthMsg(targetId, msg = '', tipo = '') {
   el.className = 'auth-msg' + (tipo ? ' ' + tipo : '');
 }
 
+// ── CONTROL DE VISIBILIDAD CENTRAL DE COMPRAS ──────────────────
+// La sección Central de Compras SOLO es visible para:
+//   1. Usuarios Windows autorizados (compradores del diccionario COMPRADORES_WINDOWS)
+//   2. Usuarios que han iniciado sesión con credenciales válidas (session_token activo)
+// El resto de usuarios NO verán ningún rastro de esta sección.
 function shouldExposeCentralAccess() {
-  return Boolean(getCentralAuthState() || detectarCompradorCentral());
+  // Sesión activa (manual o windows) ya guardada
+  if (getCentralAuthState()) return true;
+  // Usuario Windows detectado que pertenece al grupo de compradores
+  const detectado = detectarUsuarioWindows();
+  if (detectado && getCompradorPorWindows(detectado)) return true;
+  return false;
 }
 
 function applyCentralVisibility(forceVisible = null) {
   const card = document.getElementById('centralAccesoCard');
   const wrap = document.getElementById('centralWrap');
   const modal = document.getElementById('centralAuthModal');
-  const visible = forceVisible === null ? shouldExposeCentralAccess() : !!forceVisible;
-  if (card) card.style.display = visible ? 'block' : 'none';
+
+  // Guardián de seguridad: si se pide mostrar, verificar autorización real
+  const authorized = shouldExposeCentralAccess();
+  const visible = (forceVisible === true && authorized) ? true
+                : (forceVisible === false)               ? false
+                : authorized;
+
+  if (card) {
+    if (visible) {
+      card.style.removeProperty('display'); // quita el !important inicial
+      card.style.setProperty('display', 'block');
+    } else {
+      card.style.setProperty('display', 'none', 'important');
+    }
+  }
   if (!visible) {
-    if (wrap) wrap.classList.remove('open');
+    if (wrap)  wrap.classList.remove('open');
     if (modal) modal.classList.remove('open');
   }
   return visible;
@@ -2670,11 +2693,24 @@ async function cerrarCentral() {
 async function registrarTrazaCentral(action, details = {}) {
   const state = getCentralAuthState();
   if (!state?.session_token) return;
+  const windowsUser = detectarUsuarioWindows();
+  const enrichedDetails = {
+    ...details,
+    // Nombre real del comprador (nunca solo el usuario técnico)
+    gestor_nombre: state.display_name || state.username || '',
+    gestor_key: state.user_key || state.username || '',
+    // Usuario Windows detectado en el equipo (dato adicional de trazabilidad)
+    windows_user_detectado: windowsUser || state.windows_user || '',
+    // Modo de acceso: 'windows' (automático) o 'manual'
+    modo_acceso: state.access_mode || '',
+    // Fecha y hora de la acción
+    timestamp: new Date().toISOString()
+  };
   try {
     await centralRpc(CENTRAL_RPC_LOG, {
       p_session_token: state.session_token,
       p_action: action,
-      p_details: details
+      p_details: enrichedDetails
     });
   } catch (err) {
     console.warn('No se pudo registrar la traza de Central:', err);

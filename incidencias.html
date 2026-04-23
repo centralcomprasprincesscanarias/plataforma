@@ -625,7 +625,7 @@
 <div class="header">
   <div class="header-left">
     <div>
-      <div class="header-title">Incidencias</div>
+      <div class="header-title" title="Compradores: doble clic para acceder" style="cursor:default">Incidencias</div>
       <div class="header-sub">Princess Hotels &amp; Resorts · Canarias</div>
     </div>
   </div>
@@ -1257,21 +1257,39 @@ function setAuthMsg(targetId, msg = '', tipo = '') {
 }
 
 // ── CONTROL DE VISIBILIDAD CENTRAL DE COMPRAS ──────────────────
-// La sección Central de Compras SOLO es visible para:
-//   1. Usuarios Windows autorizados (compradores del diccionario COMPRADORES_WINDOWS)
-//   2. Usuarios que han iniciado sesión con credenciales válidas (session_token activo)
-// El resto de usuarios NO verán ningún rastro de esta sección.
+// La tarjeta se oculta a usuarios normales de hotel.
+// Los compradores acceden:
+//   a) Automáticamente si su usuario Windows está en COMPRADORES_WINDOWS
+//   b) Mediante sesión activa guardada en este equipo
+//   c) Mediante acceso secreto: doble clic en el título "Incidencias" del header
 function shouldExposeCentralAccess() {
-  // 1. Sesión activa válida (manual o windows)
+  // Sesión activa válida (manual o windows)
   if (getCentralAuthState()) return true;
-  // 2. Usuario Windows detectado que pertenece al grupo de compradores
+  // Usuario Windows detectado que pertenece al grupo de compradores
   const detectado = detectarUsuarioWindows();
   if (detectado && getCompradorPorWindows(detectado)) return true;
-  // 3. Sesión previa guardada (puede estar expirada) → el comprador ya se identificó
-  //    en algún momento en este equipo, mostrar para que pueda re-autenticarse
+  // Sesión previa guardada (expirada) → permitir re-login
   if (localStorage.getItem(CENTRAL_AUTH_SESSION_KEY)) return true;
   return false;
 }
+
+// Acceso secreto para compradores sin Windows user: doble clic en título del header
+document.addEventListener('DOMContentLoaded', function() {
+  const titulo = document.querySelector('.header-title');
+  if (titulo) {
+    titulo.addEventListener('dblclick', function() {
+      const card = document.getElementById('centralAccesoCard');
+      if (!card) return;
+      // Mostrar la tarjeta y abrir el modal de login directamente
+      card.style.removeProperty('display');
+      card.style.setProperty('display', 'block');
+      updateWindowsInfoBanner();
+      updateCentralSessionInfo();
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => abrirModalAuth('login'), 400);
+    });
+  }
+});
 
 function applyCentralVisibility(forceVisible = null) {
   const card = document.getElementById('centralAccesoCard');
@@ -2847,6 +2865,7 @@ function cargarRegistroSolucionesCentral(){
 }
 document.addEventListener('DOMContentLoaded', async function(){
   actualizarHotelDatos();
+  applyCentralVisibility(); // evalúa si mostrar u ocultar según sesión/Windows
   updateWindowsInfoBanner();
   updateCentralSessionInfo();
 
@@ -2859,7 +2878,7 @@ document.addEventListener('DOMContentLoaded', async function(){
   if (authConfirmPassword) authConfirmPassword.addEventListener('keydown', function(e){ if(e.key === 'Enter') cambiarPasswordTemporal(); });
   if (authNewPassword) authNewPassword.addEventListener('keydown', function(e){ if(e.key === 'Enter') cambiarPasswordTemporal(); });
 
-  // 1. Sesión activa guardada → validar con el servidor y abrir directamente
+  // 1. Sesión activa guardada → validar con servidor y abrir directamente
   if (await validarSesionCentral(true)) {
     applyCentralVisibility(true);
     return;
@@ -2871,34 +2890,7 @@ document.addEventListener('DOMContentLoaded', async function(){
     return;
   }
 
-  // 3. Usuario Windows autorizado pero sin sesión activa →
-  //    mostrar la tarjeta de acceso (con botón "Acceder") para que pueda hacer login
-  //    (esto cubre el caso de comprador con Windows user reconocido que aún no tiene sesión)
-  const detectado = detectarUsuarioWindows();
-  if (detectado && getCompradorPorWindows(detectado)) {
-    applyCentralVisibility(true); // muestra la tarjeta pero NO el wrap (sin sesión)
-    cerrarCentralUI();
-    updateCentralSessionInfo();
-    return;
-  }
-
-  // 4. Sin sesión activa ni Windows user autorizado →
-  //    la tarjeta permanece completamente oculta para usuarios no autorizados.
-  //    EXCEPCIÓN: si hay una sesión manual guardada pero expirada, se oculta también.
-  //    Para compradores que solo tienen acceso manual (sin Windows user conocido),
-  //    la tarjeta se muestra si existía una sesión previa aunque haya caducado,
-  //    así pueden volver a identificarse.
-  const hadSession = Boolean(localStorage.getItem('central_compras_auth_session_v1'));
-  if (hadSession) {
-    // Sesión expirada pero el usuario es un comprador conocido → mostrar para re-login
-    applyCentralVisibility(true);
-    cerrarCentralUI();
-    setCentralMsg('Tu sesión ha caducado. Vuelve a identificarte.', 'err');
-    updateCentralSessionInfo();
-    return;
-  }
-
-  // 5. Ningún indicador de comprador → ocultar completamente
+  // 3. Ni sesión ni Windows autorizado → ocultar (comprador manual usa doble clic en título)
   applyCentralVisibility(false);
   cerrarCentralUI();
   updateCentralSessionInfo();

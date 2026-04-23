@@ -1262,11 +1262,14 @@ function setAuthMsg(targetId, msg = '', tipo = '') {
 //   2. Usuarios que han iniciado sesión con credenciales válidas (session_token activo)
 // El resto de usuarios NO verán ningún rastro de esta sección.
 function shouldExposeCentralAccess() {
-  // Sesión activa (manual o windows) ya guardada
+  // 1. Sesión activa válida (manual o windows)
   if (getCentralAuthState()) return true;
-  // Usuario Windows detectado que pertenece al grupo de compradores
+  // 2. Usuario Windows detectado que pertenece al grupo de compradores
   const detectado = detectarUsuarioWindows();
   if (detectado && getCompradorPorWindows(detectado)) return true;
+  // 3. Sesión previa guardada (puede estar expirada) → el comprador ya se identificó
+  //    en algún momento en este equipo, mostrar para que pueda re-autenticarse
+  if (localStorage.getItem(CENTRAL_AUTH_SESSION_KEY)) return true;
   return false;
 }
 
@@ -1275,15 +1278,22 @@ function applyCentralVisibility(forceVisible = null) {
   const wrap = document.getElementById('centralWrap');
   const modal = document.getElementById('centralAuthModal');
 
-  // Guardián de seguridad: si se pide mostrar, verificar autorización real
-  const authorized = shouldExposeCentralAccess();
-  const visible = (forceVisible === true && authorized) ? true
-                : (forceVisible === false)               ? false
-                : authorized;
+  // Lógica de visibilidad:
+  // - forceVisible = true  → se muestra siempre (llamado tras autenticación exitosa)
+  // - forceVisible = false → se oculta siempre (logout)
+  // - forceVisible = null  → evaluación automática por sesión/Windows
+  let visible;
+  if (forceVisible === true) {
+    visible = true;
+  } else if (forceVisible === false) {
+    visible = false;
+  } else {
+    visible = shouldExposeCentralAccess();
+  }
 
   if (card) {
     if (visible) {
-      card.style.removeProperty('display'); // quita el !important inicial
+      card.style.removeProperty('display');
       card.style.setProperty('display', 'block');
     } else {
       card.style.setProperty('display', 'none', 'important');
@@ -2837,7 +2847,6 @@ function cargarRegistroSolucionesCentral(){
 }
 document.addEventListener('DOMContentLoaded', async function(){
   actualizarHotelDatos();
-  applyCentralVisibility();
   updateWindowsInfoBanner();
   updateCentralSessionInfo();
 
@@ -2850,16 +2859,46 @@ document.addEventListener('DOMContentLoaded', async function(){
   if (authConfirmPassword) authConfirmPassword.addEventListener('keydown', function(e){ if(e.key === 'Enter') cambiarPasswordTemporal(); });
   if (authNewPassword) authNewPassword.addEventListener('keydown', function(e){ if(e.key === 'Enter') cambiarPasswordTemporal(); });
 
+  // 1. Sesión activa guardada → validar con el servidor y abrir directamente
   if (await validarSesionCentral(true)) {
     applyCentralVisibility(true);
     return;
   }
 
+  // 2. Usuario Windows autorizado → acceso automático sin formulario
   if (await intentarAccesoAutomaticoWindows(false)) {
     applyCentralVisibility(true);
     return;
   }
 
+  // 3. Usuario Windows autorizado pero sin sesión activa →
+  //    mostrar la tarjeta de acceso (con botón "Acceder") para que pueda hacer login
+  //    (esto cubre el caso de comprador con Windows user reconocido que aún no tiene sesión)
+  const detectado = detectarUsuarioWindows();
+  if (detectado && getCompradorPorWindows(detectado)) {
+    applyCentralVisibility(true); // muestra la tarjeta pero NO el wrap (sin sesión)
+    cerrarCentralUI();
+    updateCentralSessionInfo();
+    return;
+  }
+
+  // 4. Sin sesión activa ni Windows user autorizado →
+  //    la tarjeta permanece completamente oculta para usuarios no autorizados.
+  //    EXCEPCIÓN: si hay una sesión manual guardada pero expirada, se oculta también.
+  //    Para compradores que solo tienen acceso manual (sin Windows user conocido),
+  //    la tarjeta se muestra si existía una sesión previa aunque haya caducado,
+  //    así pueden volver a identificarse.
+  const hadSession = Boolean(localStorage.getItem('central_compras_auth_session_v1'));
+  if (hadSession) {
+    // Sesión expirada pero el usuario es un comprador conocido → mostrar para re-login
+    applyCentralVisibility(true);
+    cerrarCentralUI();
+    setCentralMsg('Tu sesión ha caducado. Vuelve a identificarte.', 'err');
+    updateCentralSessionInfo();
+    return;
+  }
+
+  // 5. Ningún indicador de comprador → ocultar completamente
   applyCentralVisibility(false);
   cerrarCentralUI();
   updateCentralSessionInfo();
